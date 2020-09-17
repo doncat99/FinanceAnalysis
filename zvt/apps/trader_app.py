@@ -23,11 +23,11 @@ traders: List[TraderInfo] = []
 trader_names: List[str] = []
 
 
-def load_traders():
+def load_traders(region):
     global traders
     global trader_names
 
-    traders = get_trader_info(return_type='domain')
+    traders = get_trader_info(region, return_type='domain')
     account_readers.clear()
     order_readers.clear()
     for trader in traders:
@@ -39,7 +39,7 @@ def load_traders():
     trader_names = [item.trader_name for item in traders]
 
 
-load_traders()
+load_traders(Region.CHN)
 
 
 def serve_layout():

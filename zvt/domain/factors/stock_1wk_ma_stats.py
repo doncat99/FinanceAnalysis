@@ -22,5 +22,6 @@ class Stock1wkMaStateStats(Stock1wkMaStateStatsBase, Mixin):
 
 
 register_schema(regions=[Region.CHN, Region.US], 
-                providers=[Provider.ZVT], 
+                providers={Region.CHN: [Provider.ZVT], 
+                           Region.US: [Provider.ZVT]}, 
                 db_name='stock_1wk_ma_stats', schema_base=Stock1wkMaStateStatsBase)

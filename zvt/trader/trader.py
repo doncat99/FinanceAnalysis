@@ -90,7 +90,7 @@ class Trader(object):
 
         self.register_trading_signal_listener(self.account_service)
 
-        self.init_selectors(region=self.region, entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
+        self.init_selectors(entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
                             codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
 
         if self.selectors:
@@ -150,7 +150,7 @@ class Trader(object):
         self.session.add(sim_account)
         self.session.commit()
 
-    def init_selectors(self, region, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
         """
         overwrite it to init selectors if you want to use selector/factor computing model or just write strategy in on_time
 

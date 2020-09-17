@@ -5,6 +5,7 @@ import numpy as np
 
 from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
+from zvt.contract.common import Region, Provider
 from zvt.factors import TargetSelector
 from zvt.factors import TechnicalFactor
 from zvt.factors.ma.ma_factor import CrossMaFactor
@@ -34,21 +35,21 @@ class GoldBullFactor(TechnicalFactor):
 class VolMacdTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
         # 周线策略
-        week_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        week_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                       provider='joinquant', level=IntervalLevel.LEVEL_1WEEK)
-        week_bull_factor = GoldBullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+                                       provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
+        week_bull_factor = GoldBullFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                          provider='joinquant', level=IntervalLevel.LEVEL_1WEEK)
+                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
         week_selector.add_filter_factor(week_bull_factor)
 
         # 日线策略
-        day_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        day_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                      provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
-        cross_ma_factor = CrossMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+                                      provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
+        cross_ma_factor = CrossMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                         codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                        provider='joinquant', level=IntervalLevel.LEVEL_1DAY, windows=[5, 250])
+                                        provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY, windows=[5, 250])
 
         day_selector.add_filter_factor(cross_ma_factor)
 
@@ -102,7 +103,7 @@ class VolMacdTrader(StockTrader):
 
 
 if __name__ == '__main__':
-    trader = VolMacdTrader(start_timestamp='2017-01-01', end_timestamp='2020-01-01')
+    trader = VolMacdTrader(Region.CHN, start_timestamp='2017-01-01', end_timestamp='2020-01-01')
     trader.run()
     # f = VolFactor(start_timestamp='2020-01-01', end_timestamp='2020-04-01')
     # print(f.result_df)

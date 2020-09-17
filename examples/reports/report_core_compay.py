@@ -7,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from examples.factors.fundamental_selector import FundamentalSelector
 from examples.reports import get_subscriber_emails
 from zvt.contract.api import get_entities
+from zvt.contract.common import Region, Provider
 from zvt.utils.time_utils import now_pd_timestamp, to_time_str
 from zvt import init_log
 from zvt.domain import Stock
@@ -20,20 +21,20 @@ sched = BackgroundScheduler()
 
 # 基本面选股 每周一次即可 基本无变化
 @sched.scheduled_job('cron', hour=16, minute=0, day_of_week='6')
-def report_core_company():
+def report_core_company(region):
     while True:
         error_count = 0
         email_action = EmailInformer()
 
         try:
-            target_date = to_time_str(now_pd_timestamp())
+            target_date = to_time_str(now_pd_timestamp(region))
 
-            my_selector: TargetSelector = FundamentalSelector(start_timestamp='2016-01-01', end_timestamp=target_date)
+            my_selector: TargetSelector = FundamentalSelector(region, start_timestamp='2016-01-01', end_timestamp=target_date)
             my_selector.run()
 
             long_targets = my_selector.get_open_long_targets(timestamp=target_date)
             if long_targets:
-                stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_targets,
+                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
 
                 # add them to eastmoney
@@ -70,7 +71,7 @@ def report_core_company():
 if __name__ == '__main__':
     init_log('report_core_company.log')
 
-    report_core_company()
+    report_core_company(Region.CHN)
 
     sched.start()
 

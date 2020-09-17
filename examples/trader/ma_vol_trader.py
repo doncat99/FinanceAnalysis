@@ -7,6 +7,7 @@ import pandas as pd
 
 from zvt.api import get_kdata, AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract.common import Region, Provider
 from zvt.domain import Stock
 from zvt.factors import TargetSelector, Accumulator
 from zvt.factors.ma.ma_factor import ImprovedMaFactor
@@ -16,7 +17,8 @@ from zvt.utils.pd_utils import pd_is_not_null
 
 
 class CrossTopBottomFactor(TopBottomFactor):
-    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, region: Region, entity_schema: EntityMixin = Stock, provider: Provider = Provider.Default, 
+                 entity_provider: Provider = Provider.Default,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
@@ -27,7 +29,7 @@ class CrossTopBottomFactor(TopBottomFactor):
                  fill_method: str = 'ffill', effective_number: int = None, accumulator: Accumulator = None,
                  need_persist: bool = False, dry_run: bool = False, adjust_type: Union[AdjustType, str] = None,
                  window=40) -> None:
-        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
+        super().__init__(region, entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, accumulator,
                          need_persist, dry_run, adjust_type, window)
@@ -41,19 +43,19 @@ class CrossTopBottomFactor(TopBottomFactor):
 
 class MaVolTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
-        ma_vol_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                         provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
+                                         provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 放量突破年线
-        ma_vol_factor = ImprovedMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_factor = ImprovedMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                          end_timestamp=end_timestamp,
-                                         provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
+                                         provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 底部附近突破
-        cross_factor = CrossTopBottomFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        cross_factor = CrossTopBottomFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                             codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                             end_timestamp=end_timestamp,
-                                            provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
+                                            provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         ma_vol_selector.add_filter_factor(ma_vol_factor)
         ma_vol_selector.add_filter_factor(cross_factor)
 
@@ -101,5 +103,5 @@ class MaVolTrader(StockTrader):
 
 
 if __name__ == '__main__':
-    trader = MaVolTrader(start_timestamp='2020-01-01', end_timestamp='2020-07-10')
+    trader = MaVolTrader(Region.CHN, start_timestamp='2020-01-01', end_timestamp='2020-07-10')
     trader.run()

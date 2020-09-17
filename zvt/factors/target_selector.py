@@ -7,10 +7,10 @@ import pandas as pd
 from pandas import DataFrame
 
 from zvt.contract import IntervalLevel
+from zvt.contract.common import Region, Provider
 from zvt.drawer.drawer import Drawer
 from zvt.factors.factor import FilterFactor, ScoreFactor, Factor, StateFactor
 from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
-from zvt.contract.common import Region, Provider
 from zvt.utils.pd_utils import index_df, pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
@@ -25,6 +25,7 @@ class TargetType(Enum):
 
 class TargetSelector(object):
     def __init__(self,
+                 region: Region,
                  entity_ids=None,
                  entity_schema=Stock,
                  exchanges=None,
@@ -41,6 +42,7 @@ class TargetSelector(object):
         self.entity_schema = entity_schema
         self.exchanges = exchanges
         self.codes = codes
+        self.region = region
         self.provider = provider
         self.portfolio_selector: TargetSelector = portfolio_selector
 
@@ -172,7 +174,7 @@ class TargetSelector(object):
 
             se[index] = False
             if portfolios:
-                stock_df = self.portfolio_selector.entity_schema.get_stocks(provider=self.portfolio_selector.provider,
+                stock_df = self.portfolio_selector.entity_schema.get_stocks(self.region, provider=self.portfolio_selector.provider,
                                                                             ids=portfolios,
                                                                             timestamp=index[1])
                 if index[0] in stock_df['stock_id']:

@@ -184,7 +184,8 @@ if __name__ == '__main__':
     start = args.start
     end = args.end
 
-    entities = get_entities(provider=Provider.JoinQuant, 
+    entities = get_entities(Regon.CHN, 
+                            provider=Provider.JoinQuant, 
                             entity_type=EntityType.Stock, 
                             columns=[Stock.entity_id, Stock.code],
                             filters=[Stock.code >= start, Stock.code < end])

@@ -5,6 +5,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt.contract.api import get_entities
+from zvt.contract.common import Region, Provider
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt import init_log
 from zvt.domain import Stock, StockTradeDay
@@ -18,7 +19,7 @@ sched = BackgroundScheduler()
 
 
 @sched.scheduled_job('cron', hour=18, minute=0, day_of_week='mon-fri')
-def report_cross_ma():
+def report_cross_ma(region):
     while True:
         error_count = 0
         email_action = EmailInformer()
@@ -28,17 +29,17 @@ def report_cross_ma():
             # StockTradeDay.record_data(provider='joinquant')
             # Stock1dKdata.record_data(provider='joinquant')
 
-            latest_day: StockTradeDay = StockTradeDay.query_data(order=StockTradeDay.timestamp.desc(), limit=1,
+            latest_day: StockTradeDay = StockTradeDay.query_data(region, order=StockTradeDay.timestamp.desc(), limit=1,
                                                                  return_type='domain')
             if latest_day:
                 target_date = latest_day[0].timestamp
             else:
-                target_date = now_pd_timestamp()
+                target_date = now_pd_timestamp(region)
 
             # 计算均线
-            my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
+            my_selector = TargetSelector(region, start_timestamp='2018-01-01', end_timestamp=target_date)
             # add the factors
-            ma_factor = CrossMaFactor(start_timestamp='2018-01-01', end_timestamp=target_date)
+            ma_factor = CrossMaFactor(region, start_timestamp='2018-01-01', end_timestamp=target_date)
 
             my_selector.add_filter_factor(ma_factor)
 
@@ -46,7 +47,7 @@ def report_cross_ma():
 
             long_targets = my_selector.get_open_long_targets(timestamp=target_date)
             if long_targets:
-                stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_targets,
+                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
                 info = [f'{stock.name}({stock.code})' for stock in stocks]
                 msg = ' '.join(info)
@@ -70,7 +71,7 @@ def report_cross_ma():
 if __name__ == '__main__':
     init_log('report_cross_ma.log')
 
-    report_cross_ma()
+    report_cross_ma(Region.CHN)
 
     sched.start()
 

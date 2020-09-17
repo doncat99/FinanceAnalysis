@@ -9,7 +9,7 @@ from zvt.api.business import get_trader_info
 from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
-from zvt.contract.common import Provider
+from zvt.contract.common import Region, Provider
 from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
 from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError, \
@@ -97,6 +97,7 @@ class AccountService(TradingListener):
 class SimAccountService(AccountService):
 
     def __init__(self,
+                 region: Region, 
                  entity_schema: EntityMixin,
                  trader_name,
                  timestamp,
@@ -116,6 +117,7 @@ class SimAccountService(AccountService):
         self.trader_name = trader_name
 
         self.session = get_db_session('zvt', data_schema=TraderInfo)
+        self.region = region
         self.provider = provider
         self.level = level
         self.start_timestamp = timestamp
@@ -127,7 +129,7 @@ class SimAccountService(AccountService):
         self.account.cash += money
 
     def init_account(self) -> AccountStats:
-        trader_info = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain',
+        trader_info = get_trader_info(self.region, session=self.session, trader_name=self.trader_name, return_type='domain',
                                       limit=1)
 
         if trader_info:
@@ -149,7 +151,7 @@ class SimAccountService(AccountService):
                             )
 
     def load_account(self) -> AccountStats:
-        records = AccountStats.query_data(filters=[AccountStats.trader_name == self.trader_name],
+        records = AccountStats.query_data(self.region, filters=[AccountStats.trader_name == self.trader_name],
                                           order=AccountStats.timestamp.desc(), limit=1, return_type='domain')
         if not records:
             return self.account

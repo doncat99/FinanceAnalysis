@@ -34,5 +34,6 @@ class Stock1dMaFactor(Stock1dMaFactorBase, Mixin):
 
 
 register_schema(regions=[Region.CHN, Region.US], 
-                providers=[Provider.ZVT], 
+                providers={Region.CHN: [Provider.ZVT], 
+                           Region.US: [Provider.ZVT]}, 
                 db_name='stock_1d_ma_factor', schema_base=Stock1dMaFactorBase)

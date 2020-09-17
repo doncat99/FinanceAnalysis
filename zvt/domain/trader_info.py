@@ -100,7 +100,8 @@ class Order(TraderBase, Mixin):
 
 
 register_schema(regions=[Region.CHN, Region.US], 
-                providers=[Provider.ZVT], 
+                providers={Region.CHN: [Provider.ZVT], 
+                           Region.US: [Provider.ZVT]}, 
                 db_name='trader_info', schema_base=TraderBase)
 
 __all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']

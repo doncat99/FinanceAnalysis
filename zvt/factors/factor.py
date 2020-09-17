@@ -152,7 +152,8 @@ class Factor(DataReader, DataListener):
                                                          data_schema=self.factor_schema,
                                                          window=accumulator.acc_window)
             else:
-                self.factor_df = get_data(provider=Provider.ZVT,
+                self.factor_df = get_data(region=self.region,
+                                          provider=Provider.ZVT,
                                           data_schema=self.factor_schema,
                                           start_timestamp=self.start_timestamp,
                                           end_timestamp=self.end_timestamp,
@@ -164,7 +165,8 @@ class Factor(DataReader, DataListener):
             if pd_is_not_null(self.data_df) and self.computing_window:
                 dfs = []
                 for entity_id, df in self.data_df.groupby(level=0):
-                    latest_laved = get_data(provider=Provider.ZVT,
+                    latest_laved = get_data(region=self.region,
+                                            provider=Provider.ZVT,
                                             data_schema=self.factor_schema,
                                             entity_id=entity_id,
                                             order=self.factor_schema.timestamp.desc(),

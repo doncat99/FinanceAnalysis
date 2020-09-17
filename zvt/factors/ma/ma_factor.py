@@ -162,15 +162,16 @@ if __name__ == '__main__':
     level = IntervalLevel(args.level)
     start = args.start
     end = args.end
+    region = Region.CHN
 
-    entities = get_entities(provider=Provider.EastMoney, 
+    entities = get_entities(region=region,
+                            provider=Provider.EastMoney, 
                             entity_type=EntityType.Stock, 
                             columns=[Stock.entity_id, Stock.code],
                             filters=[Stock.code >= start, Stock.code < end])
 
     codes = entities.index.to_list()
 
-    region = Region.CHN
     factor = ImprovedMaFactor(region=region, 
                               entity_ids=['stock_sz_000338'], 
                               start_timestamp='2020-01-01',
