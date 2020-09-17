@@ -30,14 +30,14 @@ def report_vol_up_120(region):
             # StockTradeDay.record_data(provider='joinquant')
             # Stock1dKdata.record_data(provider='joinquant')
 
-            latest_day: Stock1dKdata = Stock1dKdata.query_data(region, order=Stock1dKdata.timestamp.desc(), limit=1,
+            latest_day: Stock1dKdata = Stock1dKdata.query_data(region=region, order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
             target_date = latest_day[0].timestamp
 
             # 计算均线
-            my_selector = TargetSelector(region, start_timestamp='2019-06-01', end_timestamp=target_date)
+            my_selector = TargetSelector(region=region, start_timestamp='2019-06-01', end_timestamp=target_date)
             # add the factors
-            factor1 = ImprovedMaFactor(region, start_timestamp='2019-06-01', end_timestamp=target_date, windows=[120])
+            factor1 = ImprovedMaFactor(region=region, start_timestamp='2019-06-01', end_timestamp=target_date, windows=[120])
 
             my_selector.add_filter_factor(factor1)
 
@@ -50,14 +50,14 @@ def report_vol_up_120(region):
             # 过滤亏损股
             # check StockValuation data
             pe_date = target_date - datetime.timedelta(10)
-            if StockValuation.query_data(region, start_timestamp=pe_date, limit=1, return_type='domain'):
-                positive_df = StockValuation.query_data(region, provider=Provider.JoinQuant, entity_ids=long_stocks,
+            if StockValuation.query_data(region=region, start_timestamp=pe_date, limit=1, return_type='domain'):
+                positive_df = StockValuation.query_data(region=region, provider=Provider.JoinQuant, entity_ids=long_stocks,
                                                         start_timestamp=pe_date,
                                                         filters=[StockValuation.pe > 0],
                                                         columns=['entity_id'])
                 bad_stocks = set(long_stocks) - set(positive_df['entity_id'].tolist())
                 if bad_stocks:
-                    stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=bad_stocks,
+                    stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=bad_stocks,
                                           return_type='domain')
                     info = [f'{stock.name}({stock.code})' for stock in stocks]
                     msg = '亏损股:' + ' '.join(info) + '\n'
@@ -65,7 +65,7 @@ def report_vol_up_120(region):
                 long_stocks = set(positive_df['entity_id'].tolist())
 
             if long_stocks:
-                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_stocks,
+                stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_stocks,
                                       return_type='domain')
                 # add them to eastmoney
                 try:

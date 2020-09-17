@@ -11,10 +11,10 @@ from zvt.domain import Stock
 from zvt.factors import TechnicalFactor, Transformer, Accumulator
 
 
-def get_ref_vector(entity_id, end, window=100, level=IntervalLevel.LEVEL_1DAY, entity_schema=Stock):
+def get_ref_vector(region: Region, entity_id, end, window=100, level=IntervalLevel.LEVEL_1DAY, entity_schema=Stock):
     data_schema = get_kdata_schema(EntityType(entity_schema.__name__.lower()), level=level)
 
-    df = get_kdata(entity_id=entity_id, level=level, end_timestamp=end, order=data_schema.timestamp.desc(),
+    df = get_kdata(region=region, entity_id=entity_id, level=level, end_timestamp=end, order=data_schema.timestamp.desc(),
                    limit=window,
                    columns=['close', 'volume'])
 
@@ -40,7 +40,7 @@ class SimilarityFactor(TechnicalFactor):
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
                  adjust_type: Union[AdjustType, str] = None, entity_id='stock_sz_000338', end='2020-01-01',
                  window=100) -> None:
-        self.ref_vector = get_ref_vector(entity_id=entity_id, end=end, window=window)
+        self.ref_vector = get_ref_vector(region=region, entity_id=entity_id, end=end, window=window)
         super().__init__(region, entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,

@@ -35,19 +35,19 @@ class GoldBullFactor(TechnicalFactor):
 class VolMacdTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
         # 周线策略
-        week_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        week_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                        provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
-        week_bull_factor = GoldBullFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        week_bull_factor = GoldBullFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                           provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
         week_selector.add_filter_factor(week_bull_factor)
 
         # 日线策略
-        day_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        day_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                       provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
-        cross_ma_factor = CrossMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        cross_ma_factor = CrossMaFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                         codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                         provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY, windows=[5, 250])
 
@@ -64,7 +64,7 @@ class VolMacdTrader(StockTrader):
             if not long_targets:
                 return None
 
-            df = get_kdata(entity_ids=list(long_targets), start_timestamp=timestamp, end_timestamp=timestamp,
+            df = get_kdata(region=self.region, entity_ids=list(long_targets), start_timestamp=timestamp, end_timestamp=timestamp,
                            columns=['entity_id', 'turnover'])
             if pd_is_not_null(df):
                 df.sort_values(by=['turnover'])
@@ -80,7 +80,7 @@ class VolMacdTrader(StockTrader):
         if positions:
             entity_ids = [position.entity_id for position in positions]
             # 有效跌破5日线，卖出
-            input_df = get_kdata(entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
+            input_df = get_kdata(region=self.region, entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
                                  end_timestamp=timestamp, columns=['entity_id', 'close'],
                                  index=['entity_id', 'timestamp'])
             ma_df = input_df['close'].groupby(level=0).rolling(window=5, min_periods=5).mean()

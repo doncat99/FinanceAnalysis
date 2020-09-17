@@ -14,21 +14,21 @@ class LivePatternFactor(LiveOrDeadFactor):
 class LiveOrDeadTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
         # 周线策略
-        week_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        week_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                        provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
         # 死叉超过5个周期，刚好金叉
-        week_factor = LivePatternFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        week_factor = LivePatternFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                         codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                         provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
         week_selector.add_filter_factor(week_factor)
 
         # 日线策略
-        day_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        day_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                       provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 黄白线在0轴上
-        day_factor = BullFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        day_factor = BullFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                 codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                 provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         day_selector.add_filter_factor(day_factor)

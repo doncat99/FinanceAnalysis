@@ -16,7 +16,7 @@ def get_subscriber_emails():
         return json.load(f)
 
 
-def risky_company(region, the_date=None, income_yoy=-0.1, profit_yoy=-0.1, entity_ids=None):
+def risky_company(region: Region, the_date=None, income_yoy=-0.1, profit_yoy=-0.1, entity_ids=None):
     if not the_date:
         the_date = to_pd_timestamp(now_time_str(region))
 
@@ -27,7 +27,7 @@ def risky_company(region, the_date=None, income_yoy=-0.1, profit_yoy=-0.1, entit
                          FinanceFactor.net_profit_growth_yoy <= profit_yoy,
                          FinanceFactor.current_ratio < 0.7,
                          FinanceFactor.quick_ratio < 0.5)
-    df = FinanceFactor.query_data(region, entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[finance_filter],
+    df = FinanceFactor.query_data(region=region, entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[finance_filter],
                                   columns=['code'])
     if pd_is_not_null(df):
         codes = codes + df.code.tolist()
@@ -35,19 +35,19 @@ def risky_company(region, the_date=None, income_yoy=-0.1, profit_yoy=-0.1, entit
     # 高应收，高存货，高商誉
     balance_filter = (BalanceSheet.accounts_receivable + BalanceSheet.inventories + BalanceSheet.goodwill) \
                      > BalanceSheet.total_equity
-    df = BalanceSheet.query_data(region, entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[balance_filter],
+    df = BalanceSheet.query_data(region=region, entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[balance_filter],
                                  columns=['code'])
     if pd_is_not_null(df):
         codes = codes + df.code.tolist()
 
     # 应收>利润*1/2
-    df1 = BalanceSheet.query_data(region, entity_ids=entity_ids, start_timestamp=start_timestamp,
+    df1 = BalanceSheet.query_data(region=region, entity_ids=entity_ids, start_timestamp=start_timestamp,
                                   columns=[BalanceSheet.code, BalanceSheet.accounts_receivable])
     if pd_is_not_null(df1):
         df1.drop_duplicates(subset='code', keep='last', inplace=True)
         df1 = df1.set_index('code', drop=True).sort_index()
 
-    df2 = IncomeStatement.query_data(region, entity_ids=entity_ids, start_timestamp=start_timestamp,
+    df2 = IncomeStatement.query_data(region=region, entity_ids=entity_ids, start_timestamp=start_timestamp,
                                      columns=[IncomeStatement.code,
                                               IncomeStatement.net_profit])
     if pd_is_not_null(df2):

@@ -15,7 +15,7 @@ def get_traders() -> List[str]:
     return []
 
 
-def get_trader_info(region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+def get_trader_info(region: Region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
                     filters=None, session=None, order=None, limit=None) -> List[trader_info.TraderInfo]:
     if trader_name:
         if filters:
@@ -29,7 +29,7 @@ def get_trader_info(region, trader_name=None, return_type='df', start_timestamp=
                     filters=filters, session=session, order=order, limit=limit)
 
 
-def get_account_stats(region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+def get_account_stats(region: Region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
                       filters=None, session=None, order=None, limit=None):
     if trader_name:
         if filters:
@@ -43,7 +43,7 @@ def get_account_stats(region, trader_name=None, return_type='df', start_timestam
                     filters=filters, session=session, order=order, limit=limit)
 
 
-def get_position(region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+def get_position(region: Region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
                  filters=None, session=None, order=None, limit=None):
     if trader_name:
         if filters:
@@ -57,7 +57,7 @@ def get_position(region, trader_name=None, return_type='df', start_timestamp=Non
                     filters=filters, session=session, order=order, limit=limit)
 
 
-def get_orders(region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+def get_orders(region: Region, trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
                filters=None, session=None, order=None, limit=None):
     if trader_name:
         if filters:

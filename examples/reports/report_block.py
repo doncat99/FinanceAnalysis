@@ -20,30 +20,30 @@ sched = BackgroundScheduler()
 
 class IndustryBlockSelector(TargetSelector):
 
-    def __init__(self, region, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
+    def __init__(self, region: Region, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
                  start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY, provider=Provider.Sina, block_selector=None) -> None:
-        super().__init__(entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+        super().__init__(entity_ids, region, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                          long_threshold, short_threshold, level, provider, block_selector)
 
-    def init_factors(self, region, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+    def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
-        block_factor = BlockMoneyFlowFactor(region, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+        block_factor = BlockMoneyFlowFactor(region=self.region, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                             provider=Provider.Sina, window=5)
         self.score_factors.append(block_factor)
 
 
 class ConceptBlockSelector(TargetSelector):
 
-    def __init__(self, region, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
+    def __init__(self, region: Region, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
                  start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY, provider=Provider.Sina, block_selector=None) -> None:
         super().__init__(region, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                          long_threshold, short_threshold, level, provider, block_selector)
 
-    def init_factors(self, region, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+    def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
-        block_factor = BlockMoneyFlowFactor(region, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+        block_factor = BlockMoneyFlowFactor(region=self.region, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                             provider='sina', window=10, category=BlockCategory.concept.value)
         self.score_factors.append(block_factor)
 
@@ -55,30 +55,30 @@ def report_block(region):
         email_action = EmailInformer(ssl=True)
 
         try:
-            latest_day: BlockMoneyFlow = BlockMoneyFlow.query_data(region, order=BlockMoneyFlow.timestamp.desc(), limit=1,
+            latest_day: BlockMoneyFlow = BlockMoneyFlow.query_data(region=region, order=BlockMoneyFlow.timestamp.desc(), limit=1,
                                                                    return_type='domain')
             target_date = latest_day[0].timestamp
 
             msg = ''
             # 行业板块
-            industry_block_selector = IndustryBlockSelector(region, start_timestamp='2020-01-01', long_threshold=0.8)
+            industry_block_selector = IndustryBlockSelector(region=region, start_timestamp='2020-01-01', long_threshold=0.8)
             industry_block_selector.run()
             industry_long_blocks = industry_block_selector.get_open_long_targets(timestamp=target_date)
 
             if industry_long_blocks:
-                blocks: List[Block] = Block.query_data(region, provider=Provider.Sina, entity_ids=industry_long_blocks,
+                blocks: List[Block] = Block.query_data(region=region, provider=Provider.Sina, entity_ids=industry_long_blocks,
                                                        return_type='domain')
 
                 info = [f'{block.name}({block.code})' for block in blocks]
                 msg = msg + '行业板块:' + ' '.join(info) + '\n'
 
             # 概念板块
-            concept_block_selector = ConceptBlockSelector(region, start_timestamp='2020-01-01', long_threshold=0.85)
+            concept_block_selector = ConceptBlockSelector(region=region, start_timestamp='2020-01-01', long_threshold=0.85)
             concept_block_selector.run()
             concept_long_blocks = concept_block_selector.get_open_long_targets(timestamp=target_date)
 
             if concept_long_blocks:
-                blocks: List[Block] = Block.query_data(region, provider=Provider.Sina, entity_ids=concept_long_blocks,
+                blocks: List[Block] = Block.query_data(region=region, provider=Provider.Sina, entity_ids=concept_long_blocks,
                                                        return_type='domain')
 
                 info = [f'{block.name}({block.code})' for block in blocks]

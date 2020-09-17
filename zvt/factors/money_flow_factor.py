@@ -30,7 +30,7 @@ class BlockMoneyFlowFactor(ScoreFactor):
                  category=BlockCategory.industry.value,
                  window=20,
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
-        df = Block.query_data(region, provider=entity_provider, filters=[Block.category == category])
+        df = Block.query_data(region=region, provider=entity_provider, filters=[Block.category == category])
         entity_ids = df['entity_id'].tolist()
         self.window = window
         super().__init__(BlockMoneyFlow, region, Block, provider=provider, entity_provider=entity_provider,

@@ -29,7 +29,7 @@ def report_cross_ma(region):
             # StockTradeDay.record_data(provider='joinquant')
             # Stock1dKdata.record_data(provider='joinquant')
 
-            latest_day: StockTradeDay = StockTradeDay.query_data(region, order=StockTradeDay.timestamp.desc(), limit=1,
+            latest_day: StockTradeDay = StockTradeDay.query_data(region=region, order=StockTradeDay.timestamp.desc(), limit=1,
                                                                  return_type='domain')
             if latest_day:
                 target_date = latest_day[0].timestamp
@@ -37,9 +37,9 @@ def report_cross_ma(region):
                 target_date = now_pd_timestamp(region)
 
             # 计算均线
-            my_selector = TargetSelector(region, start_timestamp='2018-01-01', end_timestamp=target_date)
+            my_selector = TargetSelector(region=region, start_timestamp='2018-01-01', end_timestamp=target_date)
             # add the factors
-            ma_factor = CrossMaFactor(region, start_timestamp='2018-01-01', end_timestamp=target_date)
+            ma_factor = CrossMaFactor(region=region, start_timestamp='2018-01-01', end_timestamp=target_date)
 
             my_selector.add_filter_factor(ma_factor)
 
@@ -47,7 +47,7 @@ def report_cross_ma(region):
 
             long_targets = my_selector.get_open_long_targets(timestamp=target_date)
             if long_targets:
-                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
+                stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
                 info = [f'{stock.name}({stock.code})' for stock in stocks]
                 msg = ' '.join(info)

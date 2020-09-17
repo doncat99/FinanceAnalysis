@@ -174,7 +174,8 @@ class TargetSelector(object):
 
             se[index] = False
             if portfolios:
-                stock_df = self.portfolio_selector.entity_schema.get_stocks(self.region, provider=self.portfolio_selector.provider,
+                stock_df = self.portfolio_selector.entity_schema.get_stocks(region=self.region, 
+                                                                            provider=self.portfolio_selector.provider,
                                                                             ids=portfolios,
                                                                             timestamp=index[1])
                 if index[0] in stock_df['stock_id']:

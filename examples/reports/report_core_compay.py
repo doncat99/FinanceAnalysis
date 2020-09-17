@@ -29,12 +29,12 @@ def report_core_company(region):
         try:
             target_date = to_time_str(now_pd_timestamp(region))
 
-            my_selector: TargetSelector = FundamentalSelector(region, start_timestamp='2016-01-01', end_timestamp=target_date)
+            my_selector: TargetSelector = FundamentalSelector(region=region, start_timestamp='2016-01-01', end_timestamp=target_date)
             my_selector.run()
 
             long_targets = my_selector.get_open_long_targets(timestamp=target_date)
             if long_targets:
-                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
+                stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
 
                 # add them to eastmoney

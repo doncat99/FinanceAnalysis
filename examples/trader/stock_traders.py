@@ -10,12 +10,12 @@ from zvt.trader.trader import StockTrader
 
 class MyMaTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        myselector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider=Provider.JoinQuant)
 
         myselector.add_filter_factor(
-            CrossMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+            CrossMaFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                           windows=[5, 10], need_persist=False))
 
@@ -24,12 +24,12 @@ class MyMaTrader(StockTrader):
 
 class MyBullTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        myselector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider=Provider.JoinQuant)
 
         myselector.add_filter_factor(
-            BullFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+            BullFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp))
 
         self.selectors.append(myselector)

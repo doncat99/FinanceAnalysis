@@ -540,7 +540,7 @@ def get_entity_ids(region: Region,
                    exchanges=None, 
                    codes=None, 
                    provider: Provider = Provider.Default):
-    df = get_entities(region, entity_type=entity_type, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
+    df = get_entities(region=region, entity_type=entity_type, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
                       provider=provider)
     if pd_is_not_null(df):
         return df['entity_id'].to_list()

@@ -43,16 +43,16 @@ class CrossTopBottomFactor(TopBottomFactor):
 
 class MaVolTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
-        ma_vol_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 放量突破年线
-        ma_vol_factor = ImprovedMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_factor = ImprovedMaFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                          end_timestamp=end_timestamp,
                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 底部附近突破
-        cross_factor = CrossTopBottomFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        cross_factor = CrossTopBottomFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                             codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                             end_timestamp=end_timestamp,
                                             provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
@@ -67,7 +67,7 @@ class MaVolTrader(StockTrader):
             if not long_targets:
                 return None
 
-            df = get_kdata(entity_ids=long_targets, start_timestamp=timestamp, end_timestamp=timestamp,
+            df = get_kdata(region=self.region, entity_ids=long_targets, start_timestamp=timestamp, end_timestamp=timestamp,
                            columns=['entity_id', 'turnover'])
             if pd_is_not_null(df):
                 df.sort_values(by=['turnover'])
@@ -80,7 +80,7 @@ class MaVolTrader(StockTrader):
         if positions:
             entity_ids = [position.entity_id for position in positions]
             # 有效跌破5日线，卖出
-            input_df = get_kdata(entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
+            input_df = get_kdata(region=region, entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
                                  end_timestamp=timestamp, columns=['entity_id', 'close'],
                                  index=['entity_id', 'timestamp'])
             ma_df = input_df['close'].groupby(level=0).rolling(window=10, min_periods=10).mean()

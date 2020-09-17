@@ -19,9 +19,9 @@ from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_pd_timestamp
 
 
-def entity_ids_to_msg(region, entity_ids):
+def entity_ids_to_msg(region: Region, entity_ids):
     if entity_ids:
-        stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=entity_ids,
+        stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=entity_ids,
                               return_type='domain')
 
         info = [f'{stock.name}({stock.code})' for stock in stocks]
@@ -31,11 +31,11 @@ def entity_ids_to_msg(region, entity_ids):
 
 class MaVolTrader(StockTrader):
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
-        ma_vol_selector = TargetSelector(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
         # 放量突破年线
-        ma_vol_factor = ImprovedMaFactor(self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_factor = ImprovedMaFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                          end_timestamp=end_timestamp,
                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
@@ -52,7 +52,7 @@ class MaVolTrader(StockTrader):
             entity_ids = []
             for entity_id in long_targets:
                 # 获取最近3k线
-                df = get_kdata(self.region, entity_id=entity_id, start_timestamp=timestamp - datetime.timedelta(20),
+                df = get_kdata(region=self.region, entity_id=entity_id, start_timestamp=timestamp - datetime.timedelta(20),
                                end_timestamp=timestamp, columns=['entity_id', 'close', 'open', 'high', 'low'])
                 if pd_is_not_null(df) and len(df) >= 3:
                     df = df.iloc[-3:]
@@ -73,7 +73,7 @@ class MaVolTrader(StockTrader):
         if positions:
             entity_ids = [position.entity_id for position in positions]
             # 有效跌破10日线，卖出
-            input_df = get_kdata(self.region, entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
+            input_df = get_kdata(region=self.region, entity_ids=entity_ids, start_timestamp=timestamp - datetime.timedelta(20),
                                  end_timestamp=timestamp, columns=['entity_id', 'close'],
                                  index=['entity_id', 'timestamp'])
             ma_df = input_df['close'].groupby(level=0).rolling(window=10, min_periods=10).mean()

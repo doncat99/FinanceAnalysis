@@ -28,15 +28,15 @@ def report_state(region):
         email_action = EmailInformer(ssl=True)
 
         try:
-            latest_day: Stock1dKdata = Stock1dKdata.query_data(region, order=Stock1dKdata.timestamp.desc(), limit=1,
+            latest_day: Stock1dKdata = Stock1dKdata.query_data(region=region, order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
             target_date = latest_day[0].timestamp
             # target_date = to_pd_timestamp('2020-01-02')
 
             # 计算均线
-            my_selector = TargetSelector(region, start_timestamp='2018-01-01', end_timestamp=target_date)
+            my_selector = TargetSelector(region=region, start_timestamp='2018-01-01', end_timestamp=target_date)
             # add the factors
-            factor1 = ImprovedMaFactor(region, start_timestamp='2018-01-01', end_timestamp=target_date)
+            factor1 = ImprovedMaFactor(region=region, start_timestamp='2018-01-01', end_timestamp=target_date)
 
             my_selector.add_filter_factor(factor1)
 
@@ -51,7 +51,7 @@ def report_state(region):
 
             if long_stocks:
                 pre_date = target_date - datetime.timedelta(2 * 365)
-                ma_state = MaStateStatsFactor(region, entity_ids=long_stocks, start_timestamp=pre_date,
+                ma_state = MaStateStatsFactor(region=region, entity_ids=long_stocks, start_timestamp=pre_date,
                                               end_timestamp=target_date, need_persist=False)
 
                 ma_state.factor_df['slope'] = 100 * ma_state.factor_df['current_pct'] / ma_state.factor_df[
@@ -65,26 +65,26 @@ def report_state(region):
                     stock_map_slope[entity_id] = round(df['slope'].iat[-1], 2)
 
                 if high_stocks:
-                    stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=high_stocks,
+                    stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=high_stocks,
                                           return_type='domain')
                     info = [f'{stock.name}({stock.code})[{stock_map_slope.get(stock.entity_id)}]' for stock in stocks]
                     msg = msg + '2年内高潮过:' + ' '.join(info) + '\n'
 
             # 过滤风险股
             if long_stocks:
-                risky_codes = risky_company(region, the_date=target_date, entity_ids=long_stocks, income_yoy=-0.8,
+                risky_codes = risky_company(region=region, the_date=target_date, entity_ids=long_stocks, income_yoy=-0.8,
                                             profit_yoy=-0.8)
 
                 if risky_codes:
                     long_stocks = [entity_id for entity_id in long_stocks if
                                    get_entity_code(entity_id) not in risky_codes]
 
-                    stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, codes=risky_codes,
+                    stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, codes=risky_codes,
                                           return_type='domain')
                     info = [f'{stock.name}({stock.code})[{stock_map_slope.get(stock.entity_id)}]' for stock in stocks]
                     msg = msg + '风险股:' + ' '.join(info) + '\n'
             if long_stocks:
-                stocks = get_entities(region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_stocks,
+                stocks = get_entities(region=region, provider=Provider.JoinQuant, entity_schema=Stock, entity_ids=long_stocks,
                                       return_type='domain')
                 # add them to eastmoney
                 try:

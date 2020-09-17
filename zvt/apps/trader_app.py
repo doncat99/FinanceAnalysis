@@ -27,7 +27,7 @@ def load_traders(region):
     global traders
     global trader_names
 
-    traders = get_trader_info(region, return_type='domain')
+    traders = get_trader_info(region=region, return_type='domain')
     account_readers.clear()
     order_readers.clear()
     for trader in traders:

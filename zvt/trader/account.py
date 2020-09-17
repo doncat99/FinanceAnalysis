@@ -129,7 +129,7 @@ class SimAccountService(AccountService):
         self.account.cash += money
 
     def init_account(self) -> AccountStats:
-        trader_info = get_trader_info(self.region, session=self.session, trader_name=self.trader_name, return_type='domain',
+        trader_info = get_trader_info(region=self.region, session=self.session, trader_name=self.trader_name, return_type='domain',
                                       limit=1)
 
         if trader_info:
@@ -151,7 +151,7 @@ class SimAccountService(AccountService):
                             )
 
     def load_account(self) -> AccountStats:
-        records = AccountStats.query_data(self.region, filters=[AccountStats.trader_name == self.trader_name],
+        records = AccountStats.query_data(region=self.region, filters=[AccountStats.trader_name == self.trader_name],
                                           order=AccountStats.timestamp.desc(), limit=1, return_type='domain')
         if not records:
             return self.account
@@ -206,7 +206,7 @@ class SimAccountService(AccountService):
         trading_level = trading_signal.trading_level.value
         if order_type:
             try:
-                kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
+                kdata = get_kdata(region=self.region, provider=self.provider, entity_id=entity_id, level=trading_level,
                                   start_timestamp=happen_timestamp, end_timestamp=happen_timestamp,
                                   limit=1)
             except Exception as e:
@@ -244,7 +244,7 @@ class SimAccountService(AccountService):
             entity_type, _, _ = decode_entity_id(position.entity_id)
             data_schema = get_kdata_schema(entity_type, level=IntervalLevel.LEVEL_1DAY)
 
-            kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position.entity_id,
+            kdata = get_kdata(region=self.region, provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position.entity_id,
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 
