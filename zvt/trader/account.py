@@ -220,7 +220,8 @@ class SimAccountService(AccountService):
 
                 if the_price:
                     self.order(entity_id=entity_id, current_price=the_price,
-                               current_timestamp=happen_timestamp, order_pct=trading_signal.position_pct,
+                               current_timestamp=happen_timestamp, 
+                               order_pct=trading_signal.position_pct,
                                order_money=trading_signal.order_money,
                                order_type=order_type)
                 else:

@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 
 from zvt.api import AdjustType
-from zvt.api.quote import get_kdata_schema, Stock
+from zvt.api.quote import get_kdata_schema
+from zvt.domain import Stock
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.common import Region, Provider, EntityType
 from zvt.factors.algorithm import MacdTransformer, consecutive_count

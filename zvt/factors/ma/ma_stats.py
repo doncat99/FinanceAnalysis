@@ -142,7 +142,7 @@ class MaStateStatsFactor(TechnicalFactor):
                  # added fields
                  short_window: int = 5,
                  long_window: int = 10) -> None:
-        self.factor_schema = get_ma_state_stats_schema(entity_type=EntityType(entity_schema.__name__), level=level)
+        self.factor_schema = get_ma_state_stats_schema(entity_type=EntityType(entity_schema.__name__.lower()), level=level)
         self.short_window = short_window
         self.long_window = long_window
 
@@ -155,8 +155,8 @@ class MaStateStatsFactor(TechnicalFactor):
                          accumulator, need_persist, dry_run)
 
 
-def show_slope(codes):
-    factor = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
+def show_slope(region, codes):
+    factor = MaStateStatsFactor(region=region, codes=codes, start_timestamp='2005-01-01',
                                 end_timestamp='2020-04-01', need_persist=False,
                                 level='1d')
     df = factor.factor_df.copy()
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     start = args.start
     end = args.end
 
-    entities = get_entities(Regon.CHN, 
+    entities = get_entities(region=Region.CHN, 
                             provider=Provider.JoinQuant, 
                             entity_type=EntityType.Stock, 
                             columns=[Stock.entity_id, Stock.code],
