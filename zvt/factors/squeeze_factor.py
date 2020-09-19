@@ -35,16 +35,34 @@ class SqueezeFactor(TechnicalFactor):
 
     def do_compute(self):
         super().do_compute()
-        # 最近3k线重叠
-        filter_se = self.factor_df['overlap'] != (0, 0)
 
-        print(self.factor_df[filter_se])
-        self.result_df = filter_se.to_frame(name='score')
+        def squeeze(df):
+            df['20sma'] = df['close'].rolling(window=20).mean()
+            df['stddev'] = df['close'].rolling(window=20).std()
+            df['lower_band'] = df['20sma'] - (2 * df['stddev'])
+            df['upper_band'] = df['20sma'] + (2 * df['stddev'])
+
+            df['TR'] = abs(df['high'] - df['low'])
+            df['ATR'] = df['TR'].rolling(window=20).mean()
+
+            df['lower_keltner'] = df['20sma'] - (df['ATR'] * 1.5)
+            df['upper_keltner'] = df['20sma'] + (df['ATR'] * 1.5)
+
+            def in_squeeze(df):
+                return df['lower_band'] > df['lower_keltner'] and df['upper_band'] < df['upper_keltner']
+
+            df['squeeze_on'] = df.apply(in_squeeze, axis=1)
+            return df
+
+        new_df = self.factor_df.reset_index(drop=True)
+        gb = new_df.groupby('entity_id', sort=False)
+        dfs = [squeeze(gb.get_group(x).copy()) for x in gb.groups]
+
+        self.result_df = pd.concat(dfs)
 
 
 if __name__ == '__main__':
-    factor = SqueezeFactor(region=Region.US, entity_ids=['A'], 
+    factor = SqueezeFactor(region=Region.US, entity_ids=['stock_NYSE_A'], 
                            start_timestamp='2015-01-01', end_timestamp='2020-07-01',
                            kdata_overlap=4)
-    print(factor.result_df[factor.result_df['score']])
-    print(len(factor.result_df))
+    print(factor.result_df)
