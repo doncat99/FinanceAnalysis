@@ -18,7 +18,7 @@ class SqueezeFactor(TechnicalFactor):
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['id', 'entity_id', 'timestamp', 'open', 'close', 'high', 'low'],
+                 columns: List = ['id', 'entity_id', 'timestamp', 'open', 'close', 'high', 'low', 'code'],
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
@@ -62,7 +62,9 @@ class SqueezeFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    factor = SqueezeFactor(region=Region.US, entity_ids=['stock_NYSE_A'], 
+    factor = SqueezeFactor(region=Region.US, entity_ids=['stock_NASDAQ_FB'], 
                            start_timestamp='2015-01-01', end_timestamp='2020-07-01',
                            kdata_overlap=4)
-    print(factor.result_df)
+
+    gb = factor.result_df.groupby('entity_id')
+    dfs = {x : gb.get_group(x) for x in gb.groups}
