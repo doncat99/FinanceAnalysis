@@ -81,13 +81,13 @@ class CandleStickTransformer(Transformer):
         super().__init__()
         self.kdata_overlap = kdata_overlap
 
-
     def transform(self, input_df) -> pd.DataFrame:
-        for pattern in self.candlestick_patterns:
+        for pattern in candlestick_patterns:
             pattern_function = getattr(talib, pattern)
             input_df[pattern] = pattern_function(input_df.open, input_df.high, input_df.low, input_df.close)
             self.indicators.append(pattern)
         return input_df
+
 
 class CandleStickFactor(TechnicalFactor):
     def __init__(self, region: Region, entity_schema: EntityMixin = Stock, 
@@ -95,7 +95,7 @@ class CandleStickFactor(TechnicalFactor):
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['id', 'entity_id', 'timestamp', 'open', 'close', 'high', 'low', 'code'],
+                 columns: List = ['entity_id', 'timestamp', 'open', 'close', 'high', 'low', 'volume'],
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,

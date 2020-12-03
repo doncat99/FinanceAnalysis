@@ -28,7 +28,7 @@ def dump(data):
 if __name__ == '__main__':
     pd.set_option('max_colwidth', 200)
 
-    gb = None #get_cache()
+    gb = get_cache()
 
     if not gb:
         factor = CandleStickFactor(region=Region.US, 
