@@ -2,6 +2,7 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
+import stockstats
 
 from zvt.api import AdjustType
 from zvt.api.quote import get_kdata_schema
@@ -50,13 +51,6 @@ class TechnicalFactor(Factor):
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
                          effective_number, transformer, accumulator, need_persist, dry_run)
-
-    def __json__(self):
-        result = super().__json__()
-        result['indicator_cols'] = self.indicator_cols
-        return result
-
-    for_json = __json__  # supported by simplejson
 
 
 class BullFactor(TechnicalFactor):

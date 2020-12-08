@@ -1,73 +1,180 @@
 # -*- coding: utf-8 -*-
-
+import numpy as np
 import pandas as pd
+from stockstats import StockDataFrame
 
 from zvt.factors.factor import Scorer, Transformer
 from zvt.utils.pd_utils import normal_index_df
 
 
-def ma(s, window=5):
+class TechnicalIndicator:
+    """Provides methods for preprocessing the stock price data
+
+    Attributes
+    ----------
+        df: DataFrame
+            data downloaded from Yahoo API
+            7 columns: A timestamp, open, high, low, close, volume and entity_df symbol
+            for the specified stock ticker
+        use_technical_indicator : boolean
+            we technical indicator or not
+        tech_indicator_list : list
+            a list of technical indicator names (modified from config.py)
+        use_turbulence : boolean
+            use turbulence index or not
+        user_defined_feature:boolean
+            user user defined features or not
+
+    Methods
+    -------
+    get_indicators()
+        main method to do the feature engineering
+
     """
+    def __init__(self,
+        use_technical_indicator=True,
+        tech_indicator_list = ['macd', 'rsi_30', 'cci_30', 'dx_30'],
+        use_turbulence=False,
+        user_defined_feature=False):
 
-    :param s:
-    :type s:pd.Series
-    :param window:
-    :type window:
-    :return:
-    :rtype:
-    """
-    return s.rolling(window=window, min_periods=window).mean()
+        self.use_technical_indicator = use_technical_indicator
+        self.tech_indicator_list = tech_indicator_list
+        self.use_turbulence=use_turbulence
+        self.user_defined_feature=user_defined_feature
 
-
-def ema(s, window=12):
-    return s.ewm(span=window, adjust=False, min_periods=window).mean()
-
-
-def macd(s, slow=26, fast=12, n=9, return_type='df', normal=False):
-    # 短期均线
-    ema_fast = ema(s, window=fast)
-    # 长期均线
-    ema_slow = ema(s, window=slow)
-
-    # 短期均线 - 长期均线 = 趋势的力度
-    diff = ema_fast - ema_slow
-    # 力度均线
-    dea = diff.ewm(span=n, adjust=False).mean()
-
-    # 力度 的变化
-    m = (diff - dea) * 2
-
-    # normal it
-    if normal:
-        diff = diff / s
-        dea = dea / s
-        m = m / s
-
-    if return_type == 'se':
-        return diff, dea, m
-    else:
-        return pd.DataFrame({'diff': diff, 'dea': dea, 'macd': m})
+        #type_list = self._get_type_list(5)
+        #self.__features = type_list
+        #self.__data_columns = config.DEFAULT_DATA_COLUMNS + self.__features
 
 
-class MaTransformer(Transformer):
-    def __init__(self, windows=[5, 10], cal_change_pct=False) -> None:
-        super().__init__()
-        self.windows = windows
-        self.cal_change_pct = cal_change_pct
+    def get_indicators(self, data):
+        """main method to do the feature engineering
+        @:param config: source dataframe
+        @:return: a DataMatrices object
+        """
+        df = data.copy()
 
-    def transform(self, input_df) -> pd.DataFrame:
-        if self.cal_change_pct:
-            input_df['change_pct'] = input_df['close'].pct_change()
+        # add technical indicators
+        # stockstats require all 5 columns
+        if (self.use_technical_indicator==True):
+            # add technical indicators using stockstats
+            df=self.add_technical_indicator(df)
+            print("Successfully added technical indicators")
 
-        for window in self.windows:
-            col = 'ma{}'.format(window)
-            self.indicators.append(col)
+        # add turbulence index for multiple stock
+        if self.use_turbulence==True:
+            df = self.add_turbulence(df)
+            print("Successfully added turbulence index")
 
-            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
-            ma_df = ma_df.reset_index(level=0, drop=True)
-            input_df[col] = ma_df
+        # add user defined feature
+        if self.user_defined_feature == True:
+            df = self.add_user_defined_feature(df)
+            print("Successfully added user defined features")
 
-        return input_df
+       
+        # fill the missing values at the beginning and the end
+        df=df.fillna(method='bfill').fillna(method="ffill")
+        return df
+
+
+    def add_technical_indicator(self, data):
+        """
+        calcualte technical indicators
+        use stockstats package to add technical inidactors
+        :param data: (df) pandas dataframe
+        :return: (df) pandas dataframe
+        """
+        df_indicator = []
+        for _, new_df in data.groupby(level=0):
+            stock = StockDataFrame.retype(new_df)
+            new_df = new_df.copy()
+            for indicator in self.tech_indicator_list:
+                new_df[indicator] = stock[indicator]
+            df_indicator.append(new_df)
+        df = pd.concat(df_indicator)
+        return df
+
+    def add_user_defined_feature(self, data):
+        """
+         add user defined features
+        :param data: (df) pandas dataframe
+        :return: (df) pandas dataframe
+        """          
+        df = data.copy()
+        print(df)
+        df['daily_return']=df.close.pct_change(1)
+        #df['return_lag_1']=df.close.pct_change(2)
+        #df['return_lag_2']=df.close.pct_change(3)
+        #df['return_lag_3']=df.close.pct_change(4)
+        #df['return_lag_4']=df.close.pct_change(5)
+        return df
+
+
+    def add_turbulence(self, data):
+        """
+        add turbulence index from a precalcualted dataframe
+        :param data: (df) pandas dataframe
+        :return: (df) pandas dataframe
+        """
+        df = data.copy()
+        turbulence_index = self.calcualte_turbulence(df)
+        df = df.merge(turbulence_index, on='timestamp')
+        df = df.sort_values(['timestamp','entity_id']).reset_index(drop=True)
+        return df
+
+
+    def calcualte_turbulence(self, data):
+        """calculate turbulence index based on dow 30"""
+        # can add other market assets
+        df = data.copy()
+        df_price_pivot=df.pivot(index='timestamp', columns='entity_id', values='close')
+        unique_date = df.timestamp.unique()
+        # start after a year
+        start = 252
+        turbulence_index = [0]*start
+        #turbulence_index = [0]
+        count=0
+        for i in range(start,len(unique_date)):
+            current_price = df_price_pivot[df_price_pivot.index == unique_date[i]]
+            hist_price = df_price_pivot[[n in unique_date[0:i] for n in df_price_pivot.index ]]
+            cov_temp = hist_price.cov()
+            current_temp=(current_price - np.mean(hist_price,axis=0))
+            temp = current_temp.values.dot(np.linalg.inv(cov_temp)).dot(current_temp.values.T)
+            if temp>0:
+                count+=1
+                if count>2:
+                    turbulence_temp = temp[0][0]
+                else:
+                    #avoid large outlier because of the calculation just begins
+                    turbulence_temp=0
+            else:
+                turbulence_temp=0
+            turbulence_index.append(turbulence_temp)
+        
+        
+        turbulence_index = pd.DataFrame({'timestamp':df_price_pivot.index,
+                                         'turbulence':turbulence_index})
+        return turbulence_index
+
+    def _get_type_list(self, feature_number):
+        """
+        :param feature_number: an int indicates the number of features
+        :return: a list of features n
+        """
+        if feature_number == 1:
+            type_list = ["close"]
+        elif feature_number == 2:
+            type_list = ["close", "volume"]
+            #raise NotImplementedError("the feature volume is not supported currently")
+        elif feature_number == 3:
+            type_list = ["close", "high", "low"]
+        elif feature_number == 4:
+            type_list = ["close", "high", "low", "open"]
+        elif feature_number == 5:
+            type_list = ["close", "high", "low", "open","volume"]  
+        else:
+            raise ValueError("feature number could not be %s" % feature_number)
+        return type_list
 
 
 def point_in_range(point, range):
@@ -167,22 +274,11 @@ class MaAndVolumeTransformer(Transformer):
 
 
 class MacdTransformer(Transformer):
-    def __init__(self, slow=26, fast=12, n=9, normal=False) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.slow = slow
-        self.fast = fast
-        self.n = n
-        self.normal = normal
-
-        self.indicators.append('diff')
-        self.indicators.append('dea')
-        self.indicators.append('macd')
 
     def transform(self, input_df) -> pd.DataFrame:
-        macd_df = input_df.groupby(level=0)['close'].apply(
-            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
-        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
-        return input_df
+        return TechnicalIndicator().get_indicators(input_df)
 
 
 class RankScorer(Scorer):
