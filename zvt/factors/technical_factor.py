@@ -115,7 +115,7 @@ if __name__ == '__main__':
                              codes=['000338', '000778'],
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10',
-                             transformer=TechnicalTransformer(normal=True))
+                             transformer=TechnicalTransformer())
 
     print(factor.factor_df.tail())
 
