@@ -273,7 +273,7 @@ class MaAndVolumeTransformer(Transformer):
         return input_df
 
 
-class MacdTransformer(Transformer):
+class TechnicalTransformer(Transformer):
     def __init__(self) -> None:
         super().__init__()
 

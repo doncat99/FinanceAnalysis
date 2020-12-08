@@ -9,7 +9,7 @@ from zvt.api.quote import get_kdata_schema
 from zvt.domain import Stock
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.common import Region, Provider, EntityType
-from zvt.factors.algorithm import MacdTransformer, consecutive_count
+from zvt.factors.algorithm import TechnicalTransformer, consecutive_count
 from zvt.factors.factor import Factor, Transformer, Accumulator
 
 
@@ -36,7 +36,7 @@ class TechnicalFactor(Factor):
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = None,
-                 transformer: Transformer = MacdTransformer(),
+                 transformer: Transformer = TechnicalTransformer(),
                  accumulator: Accumulator = None,
                  need_persist: bool = False,
                  dry_run: bool = False,
@@ -70,7 +70,7 @@ class KeepBullFactor(BullFactor):
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = MacdTransformer(),
+                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = TechnicalTransformer(),
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
                  adjust_type: Union[AdjustType, str] = None, keep_window=20) -> None:
         self.keep_window = keep_window
@@ -115,7 +115,7 @@ if __name__ == '__main__':
                              codes=['000338', '000778'],
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10',
-                             transformer=MacdTransformer(normal=True))
+                             transformer=TechnicalTransformer(normal=True))
 
     print(factor.factor_df.tail())
 

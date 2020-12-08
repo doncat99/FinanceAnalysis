@@ -114,7 +114,6 @@ if __name__ == '__main__':
     df.drop(['future', 'entity_id'], axis = 1, inplace =True)
     # df.dropna(inplace = True)
 
-    print(df)
     df = preprocess_df(df)
     # print(df)
     splitting = int(0.70 * len(df))  #splitting ratio

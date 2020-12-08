@@ -80,6 +80,7 @@ def chart(dfs):
             fig.show()   
 
 if __name__ == '__main__':
+    from datetime import datetime
     import time
 
     now = time.time()
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     factor = SqueezeFactor(region=Region.US, 
                            codes=['FB', 'AMD'], 
                            start_timestamp='2015-01-01', 
-                           end_timestamp='2020-07-01',
+                           end_timestamp=datetime.now().strftime("%Y-%m-%d"),
                            kdata_overlap=4,
                            provider=Provider.Yahoo,
                            entity_provider=Provider.Yahoo)
