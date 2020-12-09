@@ -71,7 +71,6 @@ class TechnicalIndicator:
             df = self.add_user_defined_feature(df)
             print("Successfully added user defined features")
 
-       
         # fill the missing values at the beginning and the end
         df=df.fillna(method='bfill').fillna(method="ffill")
         return df
@@ -101,7 +100,6 @@ class TechnicalIndicator:
         :return: (df) pandas dataframe
         """          
         df = data.copy()
-        print(df)
         df['daily_return']=df.close.pct_change(1)
         #df['return_lag_1']=df.close.pct_change(2)
         #df['return_lag_2']=df.close.pct_change(3)

@@ -112,10 +112,10 @@ if __name__ == '__main__':
     df['future'] = df.open.shift(-1)
     df['target'] = list(map(binary_class_classifier, df.open, df.future))
     df.drop(['future', 'entity_id'], axis = 1, inplace =True)
-    # df.dropna(inplace = True)
+    df.dropna(inplace = True)
 
     df = preprocess_df(df)
-    # print(df)
+    print(df)
     splitting = int(0.70 * len(df))  #splitting ratio
     X_y_train = df[:splitting] #80% training set 
     X_y_test = df[splitting:]  #20% testing set
