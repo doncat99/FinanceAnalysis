@@ -55,10 +55,14 @@ if __name__ == '__main__':
     trade = data_split(factor.result_df, '2019-01-01', '2020-01-01')
     
     print(train.size, train.shape, train.ndim)
+    print(train)
     print(trade.size, trade.shape, trade.ndim)
+    print(trade)
+
+    tech_list = tech_indicator + list(candlestick_patterns.keys())
 
     stock_dimension = len(train.entity_id.unique())
-    state_space = 1 + 2*stock_dimension + (len(tech_indicator))*stock_dimension
+    state_space = 1 + 2*stock_dimension + (len(tech_list))*stock_dimension
 
     print(stock_dimension, state_space)
 
@@ -66,7 +70,8 @@ if __name__ == '__main__':
                          state_space = state_space,
                          hmax = 100,
                          initial_amount = 1000000,
-                         transaction_cost_pct = 0.001)
+                         transaction_cost_pct = 0.001,
+                         tech_indicator_list = tech_list)
 
     env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
     env_trade, obs_trade = env_setup.create_env_trading(data = trade, env_class = StockEnvTrade)
@@ -76,7 +81,7 @@ if __name__ == '__main__':
     print("==============Model Training===========")
     now = datetime.now().strftime('%Y%m%d-%Hh%M')
     a2c_params_tuning = {
-                'n_steps':5, 
+                'n_steps':512, 
                 'ent_coef':0.005, 
                 'learning_rate':0.0002,
                 'verbose':0,
@@ -84,20 +89,20 @@ if __name__ == '__main__':
     model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
 
 
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    ddpg_params_tuning = {
-                'batch_size':128,
-                'buffer_size':100000, 
-                'verbose':0,
-                'timesteps':50000}
-    model_ddpg = agent.train_DDPG(model_name = "DDPG_{}".format(now), model_params = ddpg_params_tuning)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # ddpg_params_tuning = {
+    #             'batch_size':512,
+    #             'buffer_size':100000, 
+    #             'verbose':0,
+    #             'timesteps':50000}
+    # model_ddpg = agent.train_DDPG(model_name = "DDPG_{}".format(now), model_params = ddpg_params_tuning)
 
 
     print("==============Model Training===========")
     now = datetime.now().strftime('%Y%m%d-%Hh%M')
     ppo_params_tuning = {
-                'n_steps':128, 
+                'n_steps':512, 
                 'nminibatches':4,
                 'ent_coef':0.005, 
                 'learning_rate':0.00025,
@@ -109,7 +114,7 @@ if __name__ == '__main__':
     print("==============Model Training===========")
     now = datetime.now().strftime('%Y%m%d-%Hh%M')
     td3_params_tuning = {
-                'batch_size': 128,
+                'batch_size': 512,
                 'buffer_size':200000, 
                 'learning_rate': 0.0002,
                 'verbose':0,
@@ -118,18 +123,18 @@ if __name__ == '__main__':
 
 
     # env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
-    agent = DRLAgent(env = env_train)
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    sac_params_tuning={
-                'batch_size': 128,
-                'buffer_size': 100000,
-                'ent_coef':'auto_0.1',
-                'learning_rate': 0.0001,
-                'learning_starts':200,
-                'timesteps': 50000,
-                'verbose': 0}
-    model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
+    # agent = DRLAgent(env = env_train)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # sac_params_tuning={
+    #             'batch_size': 512,
+    #             'buffer_size': 100000,
+    #             'ent_coef':'auto_0.1',
+    #             'learning_rate': 0.0001,
+    #             'learning_starts':200,
+    #             'timesteps': 50000,
+    #             'verbose': 0}
+    # model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
 
     df = factor.result_df
     data_turbulence = df[(df.timestamp<'2019-01-01') & (df.timestamp>='2009-01-01')]

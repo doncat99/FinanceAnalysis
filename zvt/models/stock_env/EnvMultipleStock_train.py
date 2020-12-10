@@ -113,8 +113,8 @@ class StockEnvTrain(gym.Env):
             print("total_trades: ", self.trades)
             df_total_value.columns = ['account_value']
             df_total_value['daily_return']=df_total_value.pct_change(1)
-            sharpe = (252**0.5)*df_total_value['daily_return'].mean()/ \
-                  df_total_value['daily_return'].std()
+            std = df_total_value['daily_return'].std()
+            sharpe = (252**0.5)*df_total_value['daily_return'].mean()/std if std != 0 else 0
             print("Sharpe: ",sharpe)
             print("=================================")
             df_rewards = pd.DataFrame(self.rewards_memory)
@@ -153,6 +153,7 @@ class StockEnvTrain(gym.Env):
             self.data = self.df.loc[self.day,:]         
             #load next state
             # print("stock_shares:{}".format(self.state[29:]))
+            
             self.state =  [self.state[0]] + \
                     self.data.close.values.tolist() + \
                     list(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]) + \

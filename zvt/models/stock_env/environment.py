@@ -1,7 +1,5 @@
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-from zvt.factors.algorithm import tech_indicator
-
 
 
 class EnvSetup:
@@ -40,7 +38,7 @@ class EnvSetup:
         initial_amount = 1000000,
         transaction_cost_pct = 0.001,
         reward_scaling = 1e-4,
-        tech_indicator_list = tech_indicator):
+        tech_indicator_list = []):
 
         self.stock_dim = stock_dim
         self.hmax = hmax

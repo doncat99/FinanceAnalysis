@@ -122,6 +122,7 @@ class CandleStickFactor(TechnicalFactor):
         gb = new_df.groupby('entity_id', sort=False)
         dfs = [cal_pattern(gb.get_group(x).copy()) for x in gb.groups]
         self.result_df = pd.concat(dfs)
+        self.result_df.reset_index(drop=True, inplace=True)
 
 
 if __name__ == '__main__':
