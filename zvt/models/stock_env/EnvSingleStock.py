@@ -172,7 +172,7 @@ class SingleStockEnv(gym.Env):
               print("Sharpe: ",sharpe)
               print("=================================")
             df_rewards = pd.DataFrame(self.rewards_memory)
-            df_rewards.to_csv('results/account_rewards_train.csv')
+            df_rewards.to_csv('./results/account_rewards_train.csv')
             
             
             return self.state, self.reward, self.terminal,{}

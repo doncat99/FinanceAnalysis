@@ -121,7 +121,7 @@ class StockEnvTrade(gym.Env):
 
         if self.terminal:
             plt.plot(self.asset_memory,'r')
-            plt.savefig('results/account_value_trade_{}.png'.format(self.iteration))
+            plt.savefig('./results/account_value_trade_{}.png'.format(self.iteration))
             plt.close()
 
             df_total_value = pd.DataFrame(self.asset_memory)

@@ -118,7 +118,7 @@ class StockEnvTrain(gym.Env):
             print("Sharpe: ",sharpe)
             print("=================================")
             df_rewards = pd.DataFrame(self.rewards_memory)
-            df_rewards.to_csv('results/account_rewards_train.csv')
+            df_rewards.to_csv('./results/account_rewards_train.csv')
             
             # print('total asset: {}'.format(self.state[0]+ sum(np.array(self.state[1:29])*np.array(self.state[29:]))))
             #with open('obs.pkl', 'wb') as f:  
