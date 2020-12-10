@@ -72,6 +72,11 @@ def init_env(zvt_home: str) -> None:
     zvt_env['log_path'] = os.path.join(zvt_home, 'logs')
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
+
+    # path for storing models
+    zvt_env['model_path'] = os.path.join(zvt_home, 'model')
+    if not os.path.exists(zvt_env['model_path']):
+        os.makedirs(zvt_env['model_path'])
     
     # path for storing cache
     zvt_env['cache_path'] = os.path.join(zvt_home, 'cache')

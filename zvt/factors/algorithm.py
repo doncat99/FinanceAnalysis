@@ -7,6 +7,8 @@ from zvt.factors.factor import Scorer, Transformer
 from zvt.utils.pd_utils import normal_index_df
 
 
+tech_indicator = ['macd', 'rsi_30', 'cci_30', 'dx_30']
+
 class TechnicalIndicator:
     """Provides methods for preprocessing the stock price data
 
@@ -33,7 +35,7 @@ class TechnicalIndicator:
     """
     def __init__(self,
         use_technical_indicator=True,
-        tech_indicator_list = ['macd', 'rsi_30', 'cci_30', 'dx_30'],
+        tech_indicator_list = tech_indicator,
         use_turbulence=False,
         user_defined_feature=False):
 
@@ -115,6 +117,8 @@ class TechnicalIndicator:
         :return: (df) pandas dataframe
         """
         df = data.copy()
+        df.reset_index(drop=True, inplace=True)
+
         turbulence_index = self.calcualte_turbulence(df)
         df = df.merge(turbulence_index, on='timestamp')
         df = df.sort_values(['timestamp','entity_id']).reset_index(drop=True)
@@ -131,22 +135,18 @@ class TechnicalIndicator:
         start = 252
         turbulence_index = [0]*start
         #turbulence_index = [0]
-        count=0
+        count = 0
         for i in range(start,len(unique_date)):
             current_price = df_price_pivot[df_price_pivot.index == unique_date[i]]
             hist_price = df_price_pivot[[n in unique_date[0:i] for n in df_price_pivot.index ]]
             cov_temp = hist_price.cov()
             current_temp=(current_price - np.mean(hist_price,axis=0))
             temp = current_temp.values.dot(np.linalg.inv(cov_temp)).dot(current_temp.values.T)
-            if temp>0:
-                count+=1
-                if count>2:
-                    turbulence_temp = temp[0][0]
-                else:
-                    #avoid large outlier because of the calculation just begins
-                    turbulence_temp=0
+            if temp > 0:
+                count += 1
+                turbulence_temp = temp[0][0] if count > 2 else 0
             else:
-                turbulence_temp=0
+                turbulence_temp = 0
             turbulence_index.append(turbulence_temp)
         
         
@@ -276,7 +276,7 @@ class TechnicalTransformer(Transformer):
         super().__init__()
 
     def transform(self, input_df) -> pd.DataFrame:
-        return TechnicalIndicator().get_indicators(input_df)
+        return TechnicalIndicator(use_turbulence=True).get_indicators(input_df)
 
 
 class RankScorer(Scorer):
@@ -288,58 +288,58 @@ class RankScorer(Scorer):
         return result_df
 
 
-class QuantileScorer(Scorer):
-    def __init__(self, score_levels=[0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]) -> None:
-        self.score_levels = score_levels
+# class QuantileScorer(Scorer):
+#     def __init__(self, score_levels=[0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]) -> None:
+#         self.score_levels = score_levels
 
-    def score(self, input_df):
-        self.score_levels.sort(reverse=True)
+#     def score(self, input_df):
+#         self.score_levels.sort(reverse=True)
 
-        quantile_df = input_df.groupby(level=1).quantile(self.score_levels)
-        quantile_df.index.names = [self.time_field, 'score']
+#         quantile_df = input_df.groupby(level=1).quantile(self.score_levels)
+#         quantile_df.index.names = [self.time_field, 'score']
 
-        self.logger.info('factor:{},quantile:\n{}'.format(self.factor_name, quantile_df))
+#         self.logger.info('factor:{},quantile:\n{}'.format(self.factor_name, quantile_df))
 
-        result_df = input_df.copy()
-        result_df.reset_index(inplace=True, level='entity_id')
-        result_df['quantile'] = None
-        for timestamp in quantile_df.index.levels[0]:
-            length = len(result_df.loc[result_df.index == timestamp, 'quantile'])
-            result_df.loc[result_df.index == timestamp, 'quantile'] = [quantile_df.loc[
-                                                                           timestamp].to_dict()] * length
+#         result_df = input_df.copy()
+#         result_df.reset_index(inplace=True, level='entity_id')
+#         result_df['quantile'] = None
+#         for timestamp in quantile_df.index.levels[0]:
+#             length = len(result_df.loc[result_df.index == timestamp, 'quantile'])
+#             result_df.loc[result_df.index == timestamp, 'quantile'] = [quantile_df.loc[
+#                                                                            timestamp].to_dict()] * length
 
-        self.logger.info('factor:{},df with quantile:\n{}'.format(self.factor_name, result_df))
+#         self.logger.info('factor:{},df with quantile:\n{}'.format(self.factor_name, result_df))
 
-        # result_df = result_df.set_index(['entity_id'], append=True)
-        # result_df = result_df.sort_index(level=[0, 1])
-        #
-        # self.logger.info(result_df)
-        #
-        def calculate_score(df, factor_name, quantile):
-            original_value = df[factor_name]
-            score_map = quantile.get(factor_name)
-            min_score = self.score_levels[-1]
+#         # result_df = result_df.set_index(['entity_id'], append=True)
+#         # result_df = result_df.sort_index(level=[0, 1])
+#         #
+#         # self.logger.info(result_df)
+#         #
+#         def calculate_score(df, factor_name, quantile):
+#             original_value = df[factor_name]
+#             score_map = quantile.get(factor_name)
+#             min_score = self.score_levels[-1]
 
-            if original_value < score_map.get(min_score):
-                return 0
+#             if original_value < score_map.get(min_score):
+#                 return 0
 
-            for score in self.score_levels[:-1]:
-                if original_value >= score_map.get(score):
-                    return score
+#             for score in self.score_levels[:-1]:
+#                 if original_value >= score_map.get(score):
+#                     return score
 
-        for factor in input_df.columns.to_list():
-            result_df[factor] = result_df.apply(lambda x: calculate_score(x, factor, x['quantile']),
-                                                axis=1)
+#         for factor in input_df.columns.to_list():
+#             result_df[factor] = result_df.apply(lambda x: calculate_score(x, factor, x['quantile']),
+#                                                 axis=1)
 
-        result_df = result_df.reset_index()
-        result_df = normal_index_df(result_df)
-        result_df = result_df.loc[:, self.factors]
+#         result_df = result_df.reset_index()
+#         result_df = normal_index_df(result_df)
+#         result_df = result_df.loc[:, self.factors]
 
-        result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
+#         result_df = result_df.loc[~result_df.index.duplicated(keep='first')]
 
-        self.logger.info('factor:{},df:\n{}'.format(self.factor_name, result_df))
+#         self.logger.info('factor:{},df:\n{}'.format(self.factor_name, result_df))
 
-        return result_df
+#         return result_df
 
 
 def consecutive_count(input_df, col, pattern=[-5, 1]):

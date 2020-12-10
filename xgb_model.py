@@ -17,12 +17,10 @@ from scipy.stats import linregress
 import xgboost as xgb
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 
-from zvt import zvt_env
 from zvt.contract.common import Region, Provider
 from zvt.factors.candlestick_factor import CandleStickFactor, candlestick_patterns
 # from zvt.contract.reader import DataReader
 # from zvt.domain import Stock1dKdata, Stock
-import zvt.stats as qs
 
 
 logger = logging.getLogger(__name__)
