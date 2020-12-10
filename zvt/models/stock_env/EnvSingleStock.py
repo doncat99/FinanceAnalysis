@@ -260,7 +260,7 @@ class SingleStockEnv(gym.Env):
         asset_list = self.asset_memory
         #print(len(date_list))
         #print(len(asset_list))
-        df_account_value = pd.DataFrame({'date':date_list,'account_value':asset_list})
+        df_account_value = pd.DataFrame({'timestamp':date_list,'account_value':asset_list})
         return df_account_value
 
     def save_action_memory(self):
@@ -269,7 +269,7 @@ class SingleStockEnv(gym.Env):
         close_price_list = self.close_price_memory[:-1]
 
         action_list = self.actions_memory
-        df_actions = pd.DataFrame({'date':date_list,'actions':action_list,'close_price':close_price_list})
+        df_actions = pd.DataFrame({'timestamp':date_list,'actions':action_list,'close_price':close_price_list})
         df_actions['daily_return']=df_actions.close_price.pct_change()
         return df_actions
 

@@ -78,15 +78,15 @@ if __name__ == '__main__':
 
     agent = DRLAgent(env = env_train)
 
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    a2c_params_tuning = {
-                'n_steps':512, 
-                'ent_coef':0.005, 
-                'learning_rate':0.0002,
-                'verbose':0,
-                'timesteps':150000}
-    model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # a2c_params_tuning = {
+    #             'n_steps':512, 
+    #             'ent_coef':0.005, 
+    #             'learning_rate':0.0002,
+    #             'verbose':0,
+    #             'timesteps':150000}
+    # model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
 
 
     # print("==============Model Training===========")
@@ -99,30 +99,29 @@ if __name__ == '__main__':
     # model_ddpg = agent.train_DDPG(model_name = "DDPG_{}".format(now), model_params = ddpg_params_tuning)
 
 
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    ppo_params_tuning = {
-                'n_steps':512, 
-                'nminibatches':4,
-                'ent_coef':0.005, 
-                'learning_rate':0.00025,
-                'verbose':0,
-                'timesteps':50000}
-    model_ppo = agent.train_PPO(model_name = "PPO_{}".format(now), model_params = ppo_params_tuning)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # ppo_params_tuning = {
+    #             'n_steps':512, 
+    #             'nminibatches':4,
+    #             'ent_coef':0.005, 
+    #             'learning_rate':0.00025,
+    #             'verbose':0,
+    #             'timesteps':50000}
+    # model_ppo = agent.train_PPO(model_name = "PPO_{}".format(now), model_params = ppo_params_tuning)
 
 
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    td3_params_tuning = {
-                'batch_size': 512,
-                'buffer_size':200000, 
-                'learning_rate': 0.0002,
-                'verbose':0,
-                'timesteps':50000}
-    model_td3 = agent.train_TD3(model_name = "TD3_{}".format(now), model_params = td3_params_tuning)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # td3_params_tuning = {
+    #             'batch_size': 512,
+    #             'buffer_size':200000, 
+    #             'learning_rate': 0.0002,
+    #             'verbose':0,
+    #             'timesteps':50000}
+    # model_td3 = agent.train_TD3(model_name = "TD3_{}".format(now), model_params = td3_params_tuning)
 
 
-    env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
     agent = DRLAgent(env = env_train)
     print("==============Model Training===========")
     now = datetime.now().strftime('%Y%m%d-%Hh%M')
@@ -144,7 +143,7 @@ if __name__ == '__main__':
     turbulence_threshold = np.quantile(insample_turbulence.turbulence.values, 1)
 
     env_trade, obs_trade = env_setup.create_env_trading(data = trade, env_class = StockEnvTrade,
-                                                        turbulence_threshold=turbulence_threshold) 
+                                                        turbulence_threshold = turbulence_threshold) 
 
     df_account_value, df_actions = DRLAgent.DRL_prediction(model=model_sac, test_data = trade,
                                                            test_env = env_trade, test_obs = obs_trade)

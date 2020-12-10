@@ -46,7 +46,7 @@ def BackTestPlot(account_value,
     dji, dow_strat = baseline_strat(ticker = baseline_ticker, 
                                     start = baseline_start, 
                                     end = baseline_end)
-    df['date'] = dji['date']
+    df['timestamp'] = dji['timestamp']
     df=df.dropna()
     
     DRL_strat = backtest_strat(df)
@@ -58,10 +58,10 @@ def BackTestPlot(account_value,
 
 def backtest_strat(df):
     strategy_ret= df.copy()
-    strategy_ret['date'] = pd.to_datetime(strategy_ret['date'])
-    strategy_ret.set_index('date', drop = False, inplace = True)
+    strategy_ret['timestamp'] = pd.to_datetime(strategy_ret['timestamp'])
+    strategy_ret.set_index('timestamp', drop = False, inplace = True)
     strategy_ret.index = strategy_ret.index.tz_localize('UTC')
-    del strategy_ret['date']
+    del strategy_ret['timestamp']
     ts = pd.Series(strategy_ret['daily_return'].values, index=strategy_ret.index)
     return ts
 

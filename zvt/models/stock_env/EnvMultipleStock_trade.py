@@ -131,14 +131,15 @@ class StockEnvTrade(gym.Env):
             print("previous_total_asset:{}".format(self.asset_memory[0]))           
 
             print("end_total_asset:{}".format(end_total_asset))
-            print("total_reward:{}".format(self.state[0]+sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):61]))- self.asset_memory[0] ))
+            # print("total_reward:{}".format(self.state[0]+sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):61]))- self.asset_memory[0] ))
+            print("total_reward:{}".format(self.state[0]+sum(np.array(self.state[1:(self.stock_dim+1)])*np.array(self.state[(self.stock_dim+1):(self.stock_dim*2+1)]))- self.initial_amount ))
             print("total_cost: ", self.cost)
             print("total trades: ", self.trades)
 
             df_total_value.columns = ['account_value']
             df_total_value['daily_return']=df_total_value.pct_change(1)
-            sharpe = (252**0.5)*df_total_value['daily_return'].mean()/ \
-                  df_total_value['daily_return'].std()
+            std = df_total_value['daily_return'].std()
+            sharpe = (252**0.5)*df_total_value['daily_return'].mean()/std if std != 0 else 0
             print("Sharpe: ",sharpe)
             
             #df_rewards = pd.DataFrame(self.rewards_memory)
