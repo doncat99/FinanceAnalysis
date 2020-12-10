@@ -122,19 +122,19 @@ if __name__ == '__main__':
     model_td3 = agent.train_TD3(model_name = "TD3_{}".format(now), model_params = td3_params_tuning)
 
 
-    # env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
-    # agent = DRLAgent(env = env_train)
-    # print("==============Model Training===========")
-    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    # sac_params_tuning={
-    #             'batch_size': 512,
-    #             'buffer_size': 100000,
-    #             'ent_coef':'auto_0.1',
-    #             'learning_rate': 0.0001,
-    #             'learning_starts':200,
-    #             'timesteps': 50000,
-    #             'verbose': 0}
-    # model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
+    env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
+    agent = DRLAgent(env = env_train)
+    print("==============Model Training===========")
+    now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    sac_params_tuning={
+                'batch_size': 512,
+                'buffer_size': 100000,
+                'ent_coef':'auto_0.1',
+                'learning_rate': 0.0001,
+                'learning_starts':200,
+                'timesteps': 50000,
+                'verbose': 0}
+    model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
 
     df = factor.result_df
     data_turbulence = df[(df.timestamp<'2019-01-01') & (df.timestamp>='2009-01-01')]
