@@ -88,12 +88,10 @@ class TechnicalIndicator:
         df_indicator = []
         for _, new_df in data.groupby(level=0):
             stock = StockDataFrame.retype(new_df)
-            new_df = new_df.copy()
             for indicator in self.tech_indicator_list:
                 new_df[indicator] = stock[indicator]
             df_indicator.append(new_df)
-        df = pd.concat(df_indicator)
-        return df
+        return pd.concat(df_indicator) if len(df_indicator) > 0 else pd.DataFrame()
 
     def add_user_defined_feature(self, data):
         """
@@ -116,9 +114,10 @@ class TechnicalIndicator:
         :param data: (df) pandas dataframe
         :return: (df) pandas dataframe
         """
+        if data.empty: return data
+
         df = data.copy()
         df.reset_index(drop=True, inplace=True)
-
         turbulence_index = self.calcualte_turbulence(df)
         df = df.merge(turbulence_index, on='timestamp')
         df = df.sort_values(['timestamp','entity_id']).reset_index(drop=True)

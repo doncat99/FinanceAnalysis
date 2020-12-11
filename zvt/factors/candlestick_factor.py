@@ -95,7 +95,7 @@ class CandleStickFactor(TechnicalFactor):
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['entity_id', 'timestamp', 'open', 'close', 'high', 'low', 'volume'],
+                 columns: List = ['entity_id', 'timestamp', 'open', 'close', 'high', 'low'],
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
@@ -118,11 +118,12 @@ class CandleStickFactor(TechnicalFactor):
                 df[pattern] = pattern_function(df.open, df.high, df.low, df.close)
             return df
         
-        new_df = self.factor_df.reset_index(drop=True)
-        gb = new_df.groupby('entity_id', sort=False)
-        dfs = [cal_pattern(gb.get_group(x).copy()) for x in gb.groups]
-        self.result_df = pd.concat(dfs)
-        self.result_df.reset_index(drop=True, inplace=True)
+        if not self.factor_df.empty:
+            new_df = self.factor_df.reset_index(drop=True)
+            gb = new_df.groupby('entity_id', sort=False)
+            dfs = [cal_pattern(gb.get_group(x).copy()) for x in gb.groups]
+            self.result_df = pd.concat(dfs)
+            self.result_df.reset_index(drop=True, inplace=True)
 
 
 if __name__ == '__main__':
