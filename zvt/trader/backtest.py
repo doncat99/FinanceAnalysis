@@ -12,12 +12,12 @@ from zvt.domain import Stock1dKdata, Stock
 
 def BackTestStats(account_value):
     df = account_value.copy()
-    df=get_daily_return(df)
+    df = get_daily_return(df)
     DRL_strat = backtest_strat(df)
     perf_func = timeseries.perf_stats 
-    perf_stats_all = perf_func( returns=DRL_strat, 
-                                factor_returns=DRL_strat, 
-                                 positions=None, transactions=None, turnover_denom="AGB")
+    perf_stats_all = perf_func(returns=DRL_strat, 
+                               factor_returns=DRL_strat, 
+                               positions=None, transactions=None, turnover_denom="AGB")
     print(perf_stats_all)
     return perf_stats_all
 
@@ -50,6 +50,8 @@ def BackTestPlot(account_value,
                                     ticker = baseline_ticker, 
                                     start = baseline_start, 
                                     end = baseline_end)
+    dji.reset_index(drop=True, inplace=True)
+    
     df['timestamp'] = dji['timestamp']
     df=df.dropna()
     
@@ -77,6 +79,7 @@ def baseline_strat(region, ticker, start, end):
                         end_timestamp=end,
                         data_schema=Stock1dKdata, 
                         entity_schema=Stock,
+                        columns=['entity_id', 'timestamp', 'open', 'close', 'high', 'low', 'volume'],
                         provider=Provider.Yahoo,
                         entity_provider=Provider.Yahoo)
     dji = reader.data_df

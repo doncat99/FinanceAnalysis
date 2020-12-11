@@ -1,5 +1,4 @@
 import os
-# import talib
 import pandas as pd
 import numpy as np
 import pickle
@@ -30,7 +29,7 @@ if __name__ == '__main__':
 
     gb = get_cache()
 
-    if not gb:
+    if gb is None:
         factor = CandleStickFactor(region=Region.US, 
                                    start_timestamp='2015-01-01', 
                                    kdata_overlap=0,

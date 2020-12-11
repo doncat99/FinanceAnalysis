@@ -4,7 +4,8 @@ import faulthandler
 faulthandler.enable()
 
 import logging
-from os import listdir
+import os
+import pickle
 import time
 from datetime import datetime
 
@@ -12,6 +13,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
+from zvt import zvt_env
 from zvt.contract.common import Region, Provider
 from zvt.factors.algorithm import tech_indicator
 from zvt.factors.candlestick_factor import CandleStickFactor, candlestick_patterns
@@ -21,7 +23,6 @@ from zvt.models.stock_env.environment import EnvSetup
 from zvt.models.stock_env.EnvMultipleStock_train import StockEnvTrain
 from zvt.models.stock_env.EnvMultipleStock_trade import StockEnvTrade
 from zvt.models.drl_agent_models import DRLAgent
-
 
 
 logger = logging.getLogger(__name__)
@@ -38,12 +39,19 @@ def data_split(df, start, end):
     data.index = data.timestamp.factorize()[0]
     return data
 
+def get_cache():
+    file = zvt_env['cache_path'] + '/' + 'rl.pkl'
+    if os.path.exists(file) and os.path.getsize(file) > 0:
+        with open(file, 'rb') as handle:
+            return pickle.load(handle)
+    return None
 
-if __name__ == '__main__':
-    now = time.time()
-    pd.options.display.max_columns = 15
-    pd.options.display.width = 10
+def dump(data):
+    file = zvt_env['cache_path'] + '/' + 'rl.pkl'
+    with open(file, 'wb+') as handle:
+        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+def rl():
     factor = CandleStickFactor(region=Region.US, 
                                codes=['FB', 'AMD'], 
                                start_timestamp='2015-01-01', 
@@ -51,8 +59,8 @@ if __name__ == '__main__':
                                provider=Provider.Yahoo,
                                entity_provider=Provider.Yahoo)
 
-    train = data_split(factor.result_df, '2015-01-01', '2019-01-01')
-    trade = data_split(factor.result_df, '2019-01-01', '2020-01-01')
+    train = data_split(factor.result_df, '2015-01-01', '2018-12-31')
+    trade = data_split(factor.result_df, '2019-01-01', '2020-09-30')
     
     print(train.size, train.shape, train.ndim)
     print(train)
@@ -78,21 +86,21 @@ if __name__ == '__main__':
 
     agent = DRLAgent(env = env_train)
 
-    # print("==============Model Training===========")
-    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    # a2c_params_tuning = {
-    #             'n_steps':512, 
-    #             'ent_coef':0.005, 
-    #             'learning_rate':0.0002,
-    #             'verbose':0,
-    #             'timesteps':150000}
-    # model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
+    print("==============Model Training===========")
+    now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    a2c_params_tuning = {
+                'n_steps':5, 
+                'ent_coef':0.005, 
+                'learning_rate':0.0002,
+                'verbose':0,
+                'timesteps':150000}
+    model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
 
 
     # print("==============Model Training===========")
     # now = datetime.now().strftime('%Y%m%d-%Hh%M')
     # ddpg_params_tuning = {
-    #             'batch_size':512,
+    #             'batch_size':128,
     #             'buffer_size':100000, 
     #             'verbose':0,
     #             'timesteps':50000}
@@ -102,7 +110,7 @@ if __name__ == '__main__':
     # print("==============Model Training===========")
     # now = datetime.now().strftime('%Y%m%d-%Hh%M')
     # ppo_params_tuning = {
-    #             'n_steps':512, 
+    #             'n_steps':128, 
     #             'nminibatches':4,
     #             'ent_coef':0.005, 
     #             'learning_rate':0.00025,
@@ -114,7 +122,7 @@ if __name__ == '__main__':
     # print("==============Model Training===========")
     # now = datetime.now().strftime('%Y%m%d-%Hh%M')
     # td3_params_tuning = {
-    #             'batch_size': 512,
+    #             'batch_size': 128,
     #             'buffer_size':200000, 
     #             'learning_rate': 0.0002,
     #             'verbose':0,
@@ -122,18 +130,18 @@ if __name__ == '__main__':
     # model_td3 = agent.train_TD3(model_name = "TD3_{}".format(now), model_params = td3_params_tuning)
 
 
-    agent = DRLAgent(env = env_train)
-    print("==============Model Training===========")
-    now = datetime.now().strftime('%Y%m%d-%Hh%M')
-    sac_params_tuning={
-                'batch_size': 512,
-                'buffer_size': 100000,
-                'ent_coef':'auto_0.1',
-                'learning_rate': 0.0001,
-                'learning_starts':200,
-                'timesteps': 50000,
-                'verbose': 0}
-    model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
+    # agent = DRLAgent(env = env_train)
+    # print("==============Model Training===========")
+    # now = datetime.now().strftime('%Y%m%d-%Hh%M')
+    # sac_params_tuning={
+    #             'batch_size': 128,
+    #             'buffer_size': 100000,
+    #             'ent_coef':'auto_0.1',
+    #             'learning_rate': 0.0001,
+    #             'learning_starts':200,
+    #             'timesteps': 50000,
+    #             'verbose': 0}
+    # model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
 
     df = factor.result_df
     data_turbulence = df[(df.timestamp<'2019-01-01') & (df.timestamp>='2009-01-01')]
@@ -145,26 +153,41 @@ if __name__ == '__main__':
     env_trade, obs_trade = env_setup.create_env_trading(data = trade, env_class = StockEnvTrade,
                                                         turbulence_threshold = turbulence_threshold) 
 
-    df_account_value, df_actions = DRLAgent.DRL_prediction(model=model_sac, test_data = trade,
+    df_account_value, df_actions = DRLAgent.DRL_prediction(model=model_a2c, test_data = trade,
                                                            test_env = env_trade, test_obs = obs_trade)
 
+    return df_account_value
+
+if __name__ == '__main__':
+    pd.options.display.max_columns = 15
+    pd.options.display.width = 10
+
+    df_account_value = get_cache()
+
+    if df_account_value is None:
+        df_account_value = rl()
+        dump(df_account_value)
+
     print("==============Get Backtest Results===========")
+    now = datetime.now().strftime('%Y%m%d')
     perf_stats_all = BackTestStats(account_value=df_account_value)
     perf_stats_all = pd.DataFrame(perf_stats_all)
-    perf_stats_all.to_csv("./"+"results"+"/perf_stats_all_"+now+'.csv')
+    perf_stats_all.to_csv("./results/perf_stats_all_"+now+'.csv')
 
     print("==============Compare to DJIA===========")
     # S&P 500: ^GSPC
     # Dow Jones Index: ^DJI
     # NASDAQ 100: ^NDX
+    baseline_ticker = 'AAPL'
+
     BackTestPlot(df_account_value,
                 region = Region.US, 
-                baseline_ticker = '^DJI', 
+                baseline_ticker = baseline_ticker, 
                 baseline_start = '2019-01-01',
                 baseline_end = '2020-09-30')
 
     print("==============Get Baseline Stats===========")
-    baesline_perf_stats=BaselineStats(region=Region.US,
-                                    baseline_ticker='^DJI',
-                                    baseline_start = '2019-01-01',
-                                    baseline_end = '2020-09-30')
+    baesline_perf_stats=BaselineStats(region = Region.US,
+                                      baseline_ticker = baseline_ticker,
+                                      baseline_start = '2019-01-01',
+                                      baseline_end = '2020-09-30')
