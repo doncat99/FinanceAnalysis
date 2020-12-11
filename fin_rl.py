@@ -157,12 +157,14 @@ if __name__ == '__main__':
     # S&P 500: ^GSPC
     # Dow Jones Index: ^DJI
     # NASDAQ 100: ^NDX
-    BackTestPlot(df_account_value, 
+    BackTestPlot(df_account_value,
+                region = Region.US, 
                 baseline_ticker = '^DJI', 
                 baseline_start = '2019-01-01',
                 baseline_end = '2020-09-30')
 
     print("==============Get Baseline Stats===========")
-    baesline_perf_stats=BaselineStats('^DJI',
+    baesline_perf_stats=BaselineStats(region=Region.US,
+                                    baseline_ticker='^DJI',
                                     baseline_start = '2019-01-01',
                                     baseline_end = '2020-09-30')

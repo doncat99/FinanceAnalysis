@@ -21,11 +21,13 @@ def BackTestStats(account_value):
     print(perf_stats_all)
     return perf_stats_all
 
-def BaselineStats(baseline_ticker = '^DJI', 
+def BaselineStats(region = Region.US,
+                  baseline_ticker = '^DJI', 
                   baseline_start = "2019-01-01", 
                   baseline_end = "2020-09-30"):
 
-    dji, dow_strat = baseline_strat(ticker = baseline_ticker, 
+    dji, dow_strat = baseline_strat(region = region,
+                                    ticker = baseline_ticker, 
                                     start = baseline_start, 
                                     end = baseline_end)
     perf_func = timeseries.perf_stats 
@@ -38,12 +40,14 @@ def BaselineStats(baseline_ticker = '^DJI',
 def BackTestPlot(account_value, 
                  baseline_start = "2019-01-01", 
                  baseline_end = "2020-09-30", 
+                 region = Region.US,
                  baseline_ticker = '^DJI'):
 
     df = account_value.copy()
     df = get_daily_return(df)
 
-    dji, dow_strat = baseline_strat(ticker = baseline_ticker, 
+    dji, dow_strat = baseline_strat(region = region,
+                                    ticker = baseline_ticker, 
                                     start = baseline_start, 
                                     end = baseline_end)
     df['timestamp'] = dji['timestamp']
