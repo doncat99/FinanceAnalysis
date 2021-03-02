@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import logging
+import time
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -93,7 +94,7 @@ if __name__ == '__main__':
     # dfs = {x : gb.get_group(x) for x in gb.groups}
 
     factor = SqueezeFactor(region=Region.US,
-                           codes=['SSBI'],
+                           codes=['FB', 'AMD'],
                            start_timestamp='2015-01-01',
                            end_timestamp=datetime.now().strftime("%Y-%m-%d"),
                            kdata_overlap=4,
@@ -102,18 +103,18 @@ if __name__ == '__main__':
     gb = factor.result_df.groupby('code')
     dfs = {x: gb.get_group(x) for x in gb.groups}
 
-    # print("1", time.time() - now)
-    # target = pd.Series(dfs['FB'].close.pct_change().tolist(), index=dfs['FB'].timestamp)
-    # bench = pd.Series(dfs['AMD'].close.pct_change().tolist(), index=dfs['AMD'].timestamp)
+    print("1", time.time() - now)
+    target = pd.Series(dfs['FB'].close.pct_change().tolist(), index=dfs['FB'].timestamp)
+    bench = pd.Series(dfs['AMD'].close.pct_change().tolist(), index=dfs['AMD'].timestamp)
 
-    # target_len = len(target)
-    # bench_len = len(bench)
-    # if bench_len > target_len:
-    #     bench = bench[-target_len:]
+    target_len = len(target)
+    bench_len = len(bench)
+    if bench_len > target_len:
+        bench = bench[-target_len:]
 
-    # print("2", time.time() - now)
-    # qs.reports.html(returns=target, benchmark=bench, output='b.html')
-    # print("3", time.time() - now)
+    print("2", time.time() - now)
+    qs.reports.html(returns=target, benchmark=bench, output='b.html')
+    print("3", time.time() - now)
 
-    # chart(dfs)
-    # print("4", time.time() - now)
+    chart(dfs)
+    print("4", time.time() - now)

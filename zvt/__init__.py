@@ -146,7 +146,7 @@ def init_config(pkg_name: str = None, current_config: dict = None, **kwargs) -> 
             sample_config = pkg_resources.resource_filename(pkg_name, 'config.json')
             if os.path.exists(sample_config):
                 copyfile(sample_config, config_path)
-        except Exception as _:
+        except:
             logger.warning(f'could not load config.json from package {pkg_name}')
 
     if os.path.exists(config_path):
