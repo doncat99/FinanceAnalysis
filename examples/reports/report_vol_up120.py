@@ -7,12 +7,12 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log
+from zvt.api.data_type import Region, Provider
+from zvt.domain import Stock, StockValuation, Stock1dHfqKdata
 from zvt.contract.api import get_entities
-from zvt.contract.common import Region, Provider
-from zvt.domain import Stock, Stock1dKdata, StockValuation
-from zvt.factors.ma.ma_factor import ImprovedMaFactor
+from zvt.factors import VolumeUpMaFactor
 from zvt.factors.target_selector import TargetSelector
-from zvt.informer.informer import EmailInformer
+from zvt.utils.inform_utils import EmailInformer
 
 logger = logging.getLogger(__name__)
 
@@ -20,24 +20,24 @@ sched = BackgroundScheduler()
 
 
 @sched.scheduled_job('cron', hour=19, minute=10, day_of_week='mon-fri')
-def report_vol_up_120(region):
+def report_vol_up_120(region: Region):
     while True:
         error_count = 0
         email_action = EmailInformer()
 
         try:
             # 抓取k线数据
-            # StockTradeDay.record_data(provider='joinquant')
-            # Stock1dKdata.record_data(provider='joinquant')
+            # StockTradeDay.record_data(provider=Provider.JoinQuant)
+            # Stock1dKdata.record_data(provider=Provider.JoinQuant)
 
-            latest_day: Stock1dKdata = Stock1dKdata.query_data(region=region, order=Stock1dKdata.timestamp.desc(), limit=1,
-                                                               return_type='domain')
+            latest_day: Stock1dHfqKdata = Stock1dHfqKdata.query_data(region=region, order=Stock1dHfqKdata.timestamp.desc(), limit=1,
+                                                                     return_type='domain')
             target_date = latest_day[0].timestamp
 
             # 计算均线
             my_selector = TargetSelector(region=region, start_timestamp='2019-06-01', end_timestamp=target_date)
             # add the factors
-            factor1 = ImprovedMaFactor(region=region, start_timestamp='2019-06-01', end_timestamp=target_date, windows=[120])
+            factor1 = VolumeUpMaFactor(region=region, start_timestamp='2019-06-01', end_timestamp=target_date, windows=[120])
 
             my_selector.add_filter_factor(factor1)
 
@@ -100,7 +100,7 @@ def report_vol_up_120(region):
 if __name__ == '__main__':
     init_log('report_vol_up_120.log')
 
-    report_vol_up_120(Region.CHN)
+    report_vol_up_120(region=Region.CHN)
 
     sched.start()
 

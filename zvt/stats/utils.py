@@ -21,7 +21,6 @@ import io as _io
 import datetime as _dt
 import pandas as _pd
 import numpy as _np
-import yfinance as _yf
 from . import stats as _stats
 
 
@@ -89,7 +88,7 @@ def to_log_returns(returns, rf=0., nperiods=None):
     """ Converts returns series to log returns """
     returns = _prepare_returns(returns, rf, nperiods)
     try:
-        return _np.log(returns+1).replace([_np.inf, -_np.inf], float('NaN'))
+        return _np.log(returns + 1).replace([_np.inf, -_np.inf], float('NaN'))
     except Exception:
         return 0.
 
@@ -227,6 +226,8 @@ def _prepare_returns(data, rf=0., nperiods=None):
 
 
 def download_returns(ticker, period="max"):
+    import yfinance as _yf
+
     if isinstance(period, _pd.DatetimeIndex):
         p = {"start": period[0]}
     else:
@@ -316,8 +317,7 @@ def make_portfolio(returns, start_balance=1e5,
         p1 = to_prices(returns, start_balance)
     else:
         # fixed amount every day
-        comp_rev = (start_balance + start_balance *
-                    returns.shift(1)).fillna(start_balance) * returns
+        comp_rev = (start_balance + start_balance * returns.shift(1)).fillna(start_balance) * returns
         p1 = start_balance + comp_rev.cumsum()
 
     # add day before with starting balance

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
+from zvt.api.data_type import Region, Provider
 from zvt.contract import IntervalLevel
-from zvt.contract.common import Region, Provider
 from zvt.factors import TargetSelector, LiveOrDeadFactor, BullFactor
 from zvt.trader.trader import StockTrader
 
@@ -12,7 +12,8 @@ class LivePatternFactor(LiveOrDeadFactor):
 
 
 class LiveOrDeadTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         # 周线策略
         week_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
@@ -41,5 +42,5 @@ class LiveOrDeadTrader(StockTrader):
 
 
 if __name__ == '__main__':
-    trader = LiveOrDeadTrader(Region.CHN, start_timestamp='2019-01-01', end_timestamp='2020-01-01')
+    trader = LiveOrDeadTrader(start_timestamp='2019-01-01', end_timestamp='2020-01-01')
     trader.run()

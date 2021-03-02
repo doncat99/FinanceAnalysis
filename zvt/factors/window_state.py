@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.api import get_kdata, get_kdata_schema
+from zvt.api.data_type import Region, EntityType
 from zvt.contract import IntervalLevel
-from zvt.contract.common import Region, EntityType
 from zvt.domain import Stock
 
 

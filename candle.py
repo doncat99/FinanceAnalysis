@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from zvt import zvt_env
-from zvt.contract.common import Region, Provider
+from zvt.api.data_type import Region, Provider
 from zvt.factors.candlestick_factor import CandleStickFactor, candlestick_patterns
 
 # import faulthandler
 # faulthandler.enable()
+
 
 def get_cache():
     file = zvt_env['cache_path'] + '/' + 'candle.pkl'
@@ -19,10 +20,12 @@ def get_cache():
             return pickle.load(handle)
     return None
 
+
 def dump(data):
     file = zvt_env['cache_path'] + '/' + 'candle.pkl'
     with open(file, 'wb+') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 if __name__ == '__main__':
     pd.set_option('max_colwidth', 200)
@@ -30,11 +33,10 @@ if __name__ == '__main__':
     gb = get_cache()
 
     if gb is None:
-        factor = CandleStickFactor(region=Region.US, 
-                                   start_timestamp='2015-01-01', 
+        factor = CandleStickFactor(region=Region.US,
+                                   start_timestamp='2015-01-01',
                                    kdata_overlap=0,
-                                   provider=Provider.Yahoo,
-                                   entity_provider=Provider.Yahoo)
+                                   provider=Provider.Yahoo)
         gb = factor.result_df.groupby('code')
         dump(gb)
 
@@ -52,16 +54,16 @@ if __name__ == '__main__':
     def normalization(data):
         _range = np.max(abs(data))
         return data / _range
-    
+
     stocks = normalization(np.array(stocks))
 
     df = pd.DataFrame(data=stocks, columns=candlestick_patterns.keys(), index=gb.groups.keys())
     df['sum'] = df.sum(axis=1)
     df.sort_values(by=['sum'], ascending=False, inplace=True)
-    
-    f, ax = plt.subplots(figsize = (6,4))
-    cmap = sns.cubehelix_palette(start = 0, rot = 3, gamma=0.8, as_cmap = True)   
-    sns.heatmap(df, cmap = cmap, linewidths = 0, linecolor= 'white', ax = ax)   
+
+    f, ax = plt.subplots(figsize=(6, 4))
+    cmap = sns.cubehelix_palette(start=0, rot=3, gamma=0.8, as_cmap=True)
+    sns.heatmap(df, cmap=cmap, linewidths=0, linecolor='white', ax=ax)
     ax.set_title('Amounts per kind and region')
     ax.set_xlabel('pattern')
     ax.set_ylabel('stock')

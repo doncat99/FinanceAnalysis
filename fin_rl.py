@@ -6,7 +6,6 @@ faulthandler.enable()
 import logging
 import os
 import pickle
-import time
 from datetime import datetime
 
 import pandas as pd
@@ -14,7 +13,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from zvt import zvt_env
-from zvt.contract.common import Region, Provider
+from zvt.api.data_type import Region, Provider
 from zvt.factors.algorithm import tech_indicator
 from zvt.factors.candlestick_factor import CandleStickFactor, candlestick_patterns
 from zvt.trader.backtest import BackTestStats, BaselineStats, BackTestPlot
@@ -39,6 +38,7 @@ def data_split(df, start, end):
     data.index = data.timestamp.factorize()[0]
     return data
 
+
 def get_cache():
     file = zvt_env['cache_path'] + '/' + 'rl.pkl'
     if os.path.exists(file) and os.path.getsize(file) > 0:
@@ -46,22 +46,23 @@ def get_cache():
             return pickle.load(handle)
     return None
 
+
 def dump(data):
     file = zvt_env['cache_path'] + '/' + 'rl.pkl'
     with open(file, 'wb+') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+
 def rl():
-    factor = CandleStickFactor(region=Region.US, 
-                               codes=['FB', 'AMD'], 
-                               start_timestamp='2015-01-01', 
+    factor = CandleStickFactor(region=Region.US,
+                               codes=['FB', 'AMD'],
+                               start_timestamp='2015-01-01',
                                kdata_overlap=0,
-                               provider=Provider.Yahoo,
-                               entity_provider=Provider.Yahoo)
+                               provider=Provider.Yahoo)
 
     train = data_split(factor.result_df, '2015-01-01', '2018-12-31')
     trade = data_split(factor.result_df, '2019-01-01', '2020-09-30')
-    
+
     print(train.size, train.shape, train.ndim)
     print(train)
     print(trade.size, trade.shape, trade.ndim)
@@ -70,31 +71,31 @@ def rl():
     tech_list = tech_indicator + list(candlestick_patterns.keys())
 
     stock_dimension = len(train.entity_id.unique())
-    state_space = 1 + 2*stock_dimension + (len(tech_list))*stock_dimension
+    state_space = 1 + 2 * stock_dimension + (len(tech_list)) * stock_dimension
 
     print(stock_dimension, state_space)
 
-    env_setup = EnvSetup(stock_dim = stock_dimension,
-                         state_space = state_space,
-                         hmax = 100,
-                         initial_amount = 1000000,
-                         transaction_cost_pct = 0.001,
-                         tech_indicator_list = tech_list)
+    env_setup = EnvSetup(stock_dim=stock_dimension,
+                         state_space=state_space,
+                         hmax=100,
+                         initial_amount=1000000,
+                         transaction_cost_pct=0.001,
+                         tech_indicator_list=tech_list)
 
-    env_train = env_setup.create_env_training(data = train, env_class = StockEnvTrain)
-    env_trade, obs_trade = env_setup.create_env_trading(data = trade, env_class = StockEnvTrade)
+    env_train = env_setup.create_env_training(data=train, env_class=StockEnvTrain)
+    env_trade, obs_trade = env_setup.create_env_trading(data=trade, env_class=StockEnvTrade)
 
-    agent = DRLAgent(env = env_train)
+    agent = DRLAgent(env=env_train)
 
     print("==============Model Training===========")
     now = datetime.now().strftime('%Y%m%d-%Hh%M')
     a2c_params_tuning = {
-                'n_steps':5, 
-                'ent_coef':0.005, 
-                'learning_rate':0.0002,
-                'verbose':0,
-                'timesteps':150000}
-    model_a2c = agent.train_A2C(model_name = "A2C_{}".format(now), model_params = a2c_params_tuning)
+                'n_steps': 5,
+                'ent_coef': 0.005,
+                'learning_rate': 0.0002,
+                'verbose': 0,
+                'timesteps': 150000}
+    model_a2c = agent.train_A2C(model_name="A2C_{}".format(now), model_params=a2c_params_tuning)
 
 
     # print("==============Model Training===========")
@@ -144,19 +145,20 @@ def rl():
     # model_sac = agent.train_SAC(model_name = "SAC_{}".format(now), model_params = sac_params_tuning)
 
     df = factor.result_df
-    data_turbulence = df[(df.timestamp<'2019-01-01') & (df.timestamp>='2009-01-01')]
+    data_turbulence = df[(df.timestamp < '2019-01-01') & (df.timestamp >= '2009-01-01')]
     insample_turbulence = data_turbulence.drop_duplicates(subset=['timestamp'])
 
     insample_turbulence.turbulence.describe()
     turbulence_threshold = np.quantile(insample_turbulence.turbulence.values, 1)
 
-    env_trade, obs_trade = env_setup.create_env_trading(data = trade, env_class = StockEnvTrade,
-                                                        turbulence_threshold = turbulence_threshold) 
+    env_trade, obs_trade = env_setup.create_env_trading(data=trade, env_class=StockEnvTrade,
+                                                        turbulence_threshold=turbulence_threshold)
 
-    df_account_value, df_actions = DRLAgent.DRL_prediction(model=model_a2c, test_data = trade,
-                                                           test_env = env_trade, test_obs = obs_trade)
+    df_account_value, df_actions = DRLAgent.DRL_prediction(model=model_a2c, test_data=trade,
+                                                           test_env=env_trade, test_obs=obs_trade)
 
     return df_account_value
+
 
 if __name__ == '__main__':
     pd.options.display.max_columns = 15
@@ -172,7 +174,7 @@ if __name__ == '__main__':
     now = datetime.now().strftime('%Y%m%d')
     perf_stats_all = BackTestStats(account_value=df_account_value)
     perf_stats_all = pd.DataFrame(perf_stats_all)
-    perf_stats_all.to_csv("./results/perf_stats_all_"+now+'.csv')
+    perf_stats_all.to_csv("./results/perf_stats_all_" + now + '.csv')
 
     print("==============Compare to DJIA===========")
     # S&P 500: ^GSPC
@@ -181,13 +183,13 @@ if __name__ == '__main__':
     baseline_ticker = 'AAPL'
 
     BackTestPlot(df_account_value,
-                region = Region.US, 
-                baseline_ticker = baseline_ticker, 
-                baseline_start = '2019-01-01',
-                baseline_end = '2020-09-30')
+                 region=Region.US,
+                 baseline_ticker=baseline_ticker,
+                 baseline_start='2019-01-01',
+                 baseline_end='2020-09-30')
 
     print("==============Get Baseline Stats===========")
-    baesline_perf_stats=BaselineStats(region = Region.US,
-                                      baseline_ticker = baseline_ticker,
-                                      baseline_start = '2019-01-01',
-                                      baseline_end = '2020-09-30')
+    baesline_perf_stats = BaselineStats(region=Region.US,
+                                        baseline_ticker=baseline_ticker,
+                                        baseline_start='2019-01-01',
+                                        baseline_end='2020-09-30')

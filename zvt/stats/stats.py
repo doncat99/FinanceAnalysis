@@ -21,9 +21,7 @@
 import pandas as _pd
 import numpy as _np
 from math import ceil as _ceil
-from scipy.stats import (
-    norm as _norm, linregress as _linregress
-)
+from scipy.stats import (norm as _norm, linregress as _linregress)
 
 from . import utils as _utils
 
@@ -311,7 +309,7 @@ def calmar(returns):
 def ulcer_index(returns, rf=0):
     """ calculates the ulcer index score (downside risk measurment) """
     returns = _utils._prepare_returns(returns, rf)
-    dd = 1. - returns/returns.cummax()
+    dd = 1. - returns / returns.cummax()
     return _np.sqrt(_np.divide((dd**2).sum(), returns.shape[0] - 1))
 
 
@@ -321,7 +319,7 @@ def ulcer_performance_index(returns, rf=0):
     (downside risk measurment)
     """
     returns = _utils._prepare_returns(returns, rf)
-    dd = 1. - returns/returns.cummax()
+    dd = 1. - returns / returns.cummax()
     ulcer = _np.sqrt(_np.divide((dd**2).sum(), returns.shape[0] - 1))
     return returns.mean() / ulcer
 
@@ -356,9 +354,9 @@ def value_at_risk(returns, sigma=1, confidence=0.95):
     sigma *= returns.std()
 
     if confidence > 1:
-        confidence = confidence/100
+        confidence = confidence / 100
 
-    return _norm.ppf(1-confidence, mu, sigma)
+    return _norm.ppf(1 - confidence, mu, sigma)
 
 
 def var(returns, sigma=1, confidence=0.95):
@@ -393,7 +391,7 @@ def tail_ratio(returns, cutoff=0.95):
     (95%) and left tail (5%).
     """
     returns = _utils._prepare_returns(returns)
-    return abs(returns.quantile(cutoff) / returns.quantile(1-cutoff))
+    return abs(returns.quantile(cutoff) / returns.quantile(1 - cutoff))
 
 
 def payoff_ratio(returns):
@@ -619,7 +617,7 @@ def greeks(returns, benchmark, periods=252.):
     alpha = alpha * periods
 
     return _pd.Series({
-        "beta":  beta,
+        "beta": beta,
         "alpha": alpha,
         # "vol": _np.sqrt(matrix[0, 0]) * _np.sqrt(periods)
     }).fillna(0)

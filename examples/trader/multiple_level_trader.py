@@ -2,33 +2,33 @@
 import datetime
 from typing import List
 
-from zvt.contract import IntervalLevel
-from zvt.contract.common import Region, Provider
 from zvt.domain import FinanceFactor
+from zvt.contract import IntervalLevel
 from zvt.factors import TargetSelector, KeepBullFactor
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
 
 
 class MultipleLevelBullTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         # 周线策略
         week_bull_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                             codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                            provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK)
+                                            provider=self.provider, level=IntervalLevel.LEVEL_1WEEK)
         # 最近20周黄白线在0轴上
         week_bull_factor = KeepBullFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                          provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1WEEK, keep_window=20)
+                                          provider=self.provider, level=IntervalLevel.LEVEL_1WEEK, keep_window=20)
         week_bull_selector.add_filter_factor(week_bull_factor)
 
         # 日线策略
         day_bull_selector = TargetSelector(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                            codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                           provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
+                                           provider=self.provider, level=IntervalLevel.LEVEL_1DAY)
         day_bull_factor = KeepBullFactor(region=self.region, entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                         provider=Provider.JoinQuant, level=IntervalLevel.LEVEL_1DAY)
+                                         provider=self.provider, level=IntervalLevel.LEVEL_1DAY)
         day_bull_selector.add_filter_factor(day_bull_factor)
 
         self.selectors.append(week_bull_selector)

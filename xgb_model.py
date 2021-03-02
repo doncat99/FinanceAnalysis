@@ -17,7 +17,7 @@ from scipy.stats import linregress
 import xgboost as xgb
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 
-from zvt.contract.common import Region, Provider
+from zvt.api.data_type import Region, Provider
 from zvt.factors.candlestick_factor import CandleStickFactor, candlestick_patterns
 # from zvt.contract.reader import DataReader
 # from zvt.domain import Stock1dKdata, Stock
@@ -83,25 +83,25 @@ def Tech_Indicators(df):
     # Rate of Change (ROC) #5
     N = df.close.diff(7)
     D = df.close.shift(7)
-    df['ROC'] = N/D
+    df['ROC'] = N / D
 
-    df.dropna(inplace =True)
+    df.dropna(inplace=True)
 
     return df
+
 
 if __name__ == '__main__':
     now = time.time()
     pd.options.display.max_columns = 15
     pd.options.display.width = 10
 
-    factor = CandleStickFactor(region=Region.US, 
-                               codes=['FB', 'AMD'], 
-                               start_timestamp='2015-01-01', 
+    factor = CandleStickFactor(region=Region.US,
+                               codes=['FB', 'AMD'],
+                               start_timestamp='2015-01-01',
                                kdata_overlap=0,
-                               provider=Provider.Yahoo,
-                               entity_provider=Provider.Yahoo)
+                               provider=Provider.Yahoo)
     gb = factor.result_df.groupby('entity_id')
-    dfs = {x : gb.get_group(x) for x in gb.groups}
+    dfs = {x: gb.get_group(x) for x in gb.groups}
 
     # df = dfs['AMD'][['open','close', 'volume','high', 'low']].copy()
     df = dfs['stock_NASDAQ_FB'].copy()
@@ -109,70 +109,65 @@ if __name__ == '__main__':
 
     df['future'] = df.open.shift(-1)
     df['target'] = list(map(binary_class_classifier, df.open, df.future))
-    df.drop(['future', 'entity_id'], axis = 1, inplace =True)
-    df.dropna(inplace = True)
+    df.drop(['future', 'entity_id'], axis=1, inplace=True)
+    df.dropna(inplace=True)
 
     df = preprocess_df(df)
     print(df)
-    splitting = int(0.70 * len(df))  #splitting ratio
-    X_y_train = df[:splitting] #80% training set 
-    X_y_test = df[splitting:]  #20% testing set
-    X_y_train = X_y_train.sample(frac=1, random_state =123) # we shuffle the training set ONLY 
+    splitting = int(0.70 * len(df))  # splitting ratio
+    X_y_train = df[:splitting]  # 80% training set
+    X_y_test = df[splitting:]  # 20% testing set
+    X_y_train = X_y_train.sample(frac=1, random_state=123)  # we shuffle the training set ONLY
 
-    X_train,y_train = X_y_train.iloc[:,:-1],X_y_train.iloc[:,-1]
-    X_test,y_test = X_y_test.iloc[:,:-1], X_y_test.iloc[:,-1]
+    X_train, y_train = X_y_train.iloc[:, :-1], X_y_train.iloc[:, -1]
+    X_test, y_test = X_y_test.iloc[:, :-1], X_y_test.iloc[:, -1]
 
-    #************************* Building the model **************************************************
+    # ************************* Building the model ***************************************
 
-    scale_pos_weight=Counter(y_train)[0]/Counter(y_train)[1]
+    scale_pos_weight = Counter(y_train)[0] / Counter(y_train)[1]
     model = xgb.XGBRFClassifier(objective='binary:logistic',
-                              scale_pos_weight=scale_pos_weight,
-                              learning_rate=0.01,
-                              n_estimators=5000,
-                              max_depth=10,
-                              min_child_weight=1,
-                              gamma=0,
-                              subsample=0.3,
-                              colsample_bytree=0.3,
-                              reg_alpha=0.014,
-                              nthread=4,
-                              seed=27) 
+                                scale_pos_weight=scale_pos_weight,
+                                learning_rate=0.01,
+                                n_estimators=5000,
+                                max_depth=10,
+                                min_child_weight=1,
+                                gamma=0,
+                                subsample=0.3,
+                                colsample_bytree=0.3,
+                                reg_alpha=0.014,
+                                nthread=4,
+                                seed=27) 
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     y_pred_training = model.predict(X_train)
-    acc_score = accuracy_score(y_test,y_pred)
-    acc_score_training = accuracy_score(y_train,y_pred_training)
+    acc_score = accuracy_score(y_test, y_pred)
+    acc_score_training = accuracy_score(y_train, y_pred_training)
 
-    print('Training Accuracy',acc_score_training)
+    print('Training Accuracy', acc_score_training)
     print('Testing Accuracy', acc_score)
 
-    #********************** Features Importance *************************************************************
+    # ********************** Features Importance *****************************************
 
     xgb.plot_importance(model)
     plt.rcParams['figure.figsize'] = [10, 5]
     plt.show()
 
-    #************************ AUC ROC CURVE******************************************************************
+    # ************************ AUC ROC CURVE**********************************************
     model_proba = model.predict_proba(X_test)
-    model_proba = model_proba[:,1] #take only the probabilities that '1' is True
-    model_auc = roc_auc_score(y_test,model_proba)
-    print('Model AUC: ',model_auc)
-    model_fpr, model_tpr,_ =  roc_curve(y_test,model_proba)
+    model_proba = model_proba[:, 1]  # take only the probabilities that '1' is True
+    model_auc = roc_auc_score(y_test, model_proba)
+    print('Model AUC: ', model_auc)
+    model_fpr, model_tpr, _ = roc_curve(y_test, model_proba)
 
-    random_proba =[0 for _ in range(len(y_test))] # we suppose that the random guesses are all 0
-    random_auc = roc_auc_score(y_test,random_proba)
+    random_proba = [0 for _ in range(len(y_test))]  # we suppose that the random guesses are all 0
+    random_auc = roc_auc_score(y_test, random_proba)
     random_fpr, random_tpr, _ = roc_curve(y_test, random_proba)
 
-    plt.plot(random_fpr,random_tpr,linestyle ='--' ,label ='Random Prediction (AUROC =%0.2f)'% random_auc)
-    plt.plot(model_fpr,model_tpr, label ='XGBoost (AUROC = %0.2f)'% model_auc)
+    plt.plot(random_fpr, random_tpr, linestyle='--', label='Random Prediction (AUROC =%0.2f)' % random_auc)
+    plt.plot(model_fpr, model_tpr, label='XGBoost (AUROC = %0.2f)' % model_auc)
 
     plt.title('ROC Plot')
     plt.xlabel('False Positive Rate (1-Specificity)')
     plt.ylabel('True Positive Rate (Sensitivity)')
     plt.legend()
     plt.show()
-
-
-
-
-

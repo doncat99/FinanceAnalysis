@@ -4,11 +4,9 @@ warnings.filterwarnings("ignore")
 import logging
 
 import pandas as pd
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
-from zvt import zvt_env
-from zvt.contract.common import Region, Provider
+from zvt.api.data_type import Region, Provider
 from zvt.factors.squeeze_factor import SqueezeFactor
 # from zvt.contract.reader import DataReader
 # from zvt.domain import Stock1dKdata, Stock
@@ -26,7 +24,7 @@ def chart(dfs):
         upper_keltner = go.Scatter(x=df['timestamp'], y=df['upper_keltner'], name='Upper Keltner Channel', line={'color': 'blue'})
         lower_keltner = go.Scatter(x=df['timestamp'], y=df['lower_keltner'], name='Lower Keltner Channel', line={'color': 'blue'})
 
-        data=[candlestick, upper_band, lower_band, upper_keltner, lower_keltner]
+        data = [candlestick, upper_band, lower_band, upper_keltner, lower_keltner]
 
         layout = go.Layout(
             title='Stock Market Data Analysis - ' + title,
@@ -39,21 +37,21 @@ def chart(dfs):
                 rangeselector=dict(
                     buttons=list([
                         dict(count=1,
-                            label="1m",
-                            step="month",
-                            stepmode="backward"),
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
                         dict(count=6,
-                            label="6m",
-                            step="month",
-                            stepmode="backward"),
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
                         dict(count=1,
-                            label="YTD",
-                            step="year",
-                            stepmode="todate"),
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
                         dict(count=1,
-                            label="1y",
-                            step="year",
-                            stepmode="backward"),
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
                         dict(step="all")
                     ])
                 ),
@@ -77,47 +75,45 @@ def chart(dfs):
     if total > 0:
         for key, df in dfs.items():
             fig = sub_chart(key, df)
-            fig.show()   
+            fig.show()
+
 
 if __name__ == '__main__':
     from datetime import datetime
     import time
 
     now = time.time()
-    # reader = DataReader(region=Region.US, 
-    #                     codes=['FB', 'AMD'], 
-    #                     data_schema=Stock1dKdata, 
+    # reader = DataReader(region=Region.US,
+    #                     codes=['FB', 'AMD'],
+    #                     data_schema=Stock1dKdata,
     #                     entity_schema=Stock,
-    #                     provider=Provider.Yahoo,
-    #                     entity_provider=Provider.Yahoo)
+    #                     provider=Provider.Yahoo)
 
     # gb = reader.data_df.groupby('code')
     # dfs = {x : gb.get_group(x) for x in gb.groups}
 
-    factor = SqueezeFactor(region=Region.US, 
-                           codes=['FB', 'AMD'], 
-                           start_timestamp='2015-01-01', 
+    factor = SqueezeFactor(region=Region.US,
+                           codes=['SSBI'],
+                           start_timestamp='2015-01-01',
                            end_timestamp=datetime.now().strftime("%Y-%m-%d"),
                            kdata_overlap=4,
-                           provider=Provider.Yahoo,
-                           entity_provider=Provider.Yahoo)
+                           provider=Provider.Yahoo)
 
     gb = factor.result_df.groupby('code')
-    dfs = {x : gb.get_group(x) for x in gb.groups}
+    dfs = {x: gb.get_group(x) for x in gb.groups}
 
-    print("1", time.time()-now)
-    target = pd.Series(dfs['FB'].close.pct_change().tolist(), index=dfs['FB'].timestamp)
-    bench = pd.Series(dfs['AMD'].close.pct_change().tolist(), index=dfs['AMD'].timestamp)
+    # print("1", time.time() - now)
+    # target = pd.Series(dfs['FB'].close.pct_change().tolist(), index=dfs['FB'].timestamp)
+    # bench = pd.Series(dfs['AMD'].close.pct_change().tolist(), index=dfs['AMD'].timestamp)
 
-    target_len = len(target)
-    bench_len = len(bench)
-    if bench_len > target_len:
-        bench = bench[-target_len:]
-    
-    print("2", time.time()-now)
-    qs.reports.html(returns=target, benchmark=bench, output='b.html')
-    print("3", time.time()-now)
-    
-    chart(dfs)
-    print("4", time.time()-now)
+    # target_len = len(target)
+    # bench_len = len(bench)
+    # if bench_len > target_len:
+    #     bench = bench[-target_len:]
 
+    # print("2", time.time() - now)
+    # qs.reports.html(returns=target, benchmark=bench, output='b.html')
+    # print("3", time.time() - now)
+
+    # chart(dfs)
+    # print("4", time.time() - now)

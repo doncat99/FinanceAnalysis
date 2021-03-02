@@ -80,8 +80,7 @@ def html(returns, benchmark=None, rf=0.,
         yoy['Cumulative'] = _utils.group_returns(
             returns, returns.index.year, True)
         yoy['Return'] = yoy['Return'].round(2).astype(str) + '%'
-        yoy['Cumulative'] = (yoy['Cumulative'] *
-                             100).round(2).astype(str) + '%'
+        yoy['Cumulative'] = (yoy['Cumulative'] * 100).round(2).astype(str) + '%'
         yoy.index.name = 'Year'
         tpl = tpl.replace('{{eoy_title}}', '<h3>EOY Returns</h3>')
         tpl = tpl.replace('{{eoy_table}}', _html_table(yoy))
@@ -215,7 +214,7 @@ def full(returns, benchmark=None, rf=0., grayscale=False,
         by='max drawdown', ascending=True)[:5]
 
     if not dd_info.empty:
-        dd_info.index = range(1, min(6, len(dd_info)+1))
+        dd_info.index = range(1, min(6, len(dd_info) + 1))
         dd_info.columns = map(lambda x: str(x).title(), dd_info.columns)
 
     if _utils._in_notebook():
@@ -372,27 +371,27 @@ def metrics(returns, benchmark=None, rf=0., display=True,
     metrics['MTD %'] = comp_func(
         df[df.index >= _dt(today.year, today.month, 1)]) * pct
 
-    d = today - _td(3*365/12)
+    d = today - _td(3 * 365 / 12)
     metrics['3M %'] = comp_func(
         df[df.index >= _dt(d.year, d.month, d.day)]) * pct
 
-    d = today - _td(6*365/12)
+    d = today - _td(6 * 365 / 12)
     metrics['6M %'] = comp_func(
         df[df.index >= _dt(d.year, d.month, d.day)]) * pct
 
     metrics['YTD %'] = comp_func(df[df.index >= _dt(today.year, 1, 1)]) * pct
 
-    d = today - _td(12*365/12)
+    d = today - _td(12 * 365 / 12)
     metrics['1Y %'] = comp_func(
         df[df.index >= _dt(d.year, d.month, d.day)]) * pct
     metrics['3Y (ann.) %'] = _stats.cagr(
-        df[df.index >= _dt(today.year-3, today.month, today.day)
+        df[df.index >= _dt(today.year - 3, today.month, today.day)
            ], 0., compounded) * pct
     metrics['5Y (ann.) %'] = _stats.cagr(
-        df[df.index >= _dt(today.year-5, today.month, today.day)
+        df[df.index >= _dt(today.year - 5, today.month, today.day)
            ], 0., compounded) * pct
     metrics['10Y (ann.) %'] = _stats.cagr(
-        df[df.index >= _dt(today.year-10, today.month, today.day)
+        df[df.index >= _dt(today.year - 10, today.month, today.day)
            ], 0., compounded) * pct
     metrics['All-time (ann.) %'] = _stats.cagr(df, 0., compounded) * pct
 
@@ -485,70 +484,70 @@ def plots(returns, benchmark=None, grayscale=False,
                         show=True, mode=("comp" if compounded else "sum"))
 
         _plots.monthly_heatmap(returns, grayscale=grayscale,
-                               figsize=(figsize[0], figsize[0]*.5),
+                               figsize=(figsize[0], figsize[0] * .5),
                                show=True, ylabel=False,
                                compounded=compounded)
 
         return
 
     _plots.returns(returns, benchmark, grayscale=grayscale,
-                   figsize=(figsize[0], figsize[0]*.6),
+                   figsize=(figsize[0], figsize[0] * .6),
                    show=True, ylabel=False)
 
     _plots.log_returns(returns, benchmark, grayscale=grayscale,
-                       figsize=(figsize[0], figsize[0]*.5),
+                       figsize=(figsize[0], figsize[0] * .5),
                        show=True, ylabel=False)
 
     if benchmark is not None:
         _plots.returns(returns, benchmark, match_volatility=True,
                        grayscale=grayscale,
-                       figsize=(figsize[0], figsize[0]*.5),
+                       figsize=(figsize[0], figsize[0] * .5),
                        show=True, ylabel=False)
 
     _plots.yearly_returns(returns, benchmark,
                           grayscale=grayscale,
-                          figsize=(figsize[0], figsize[0]*.5),
+                          figsize=(figsize[0], figsize[0] * .5),
                           show=True, ylabel=False)
 
     _plots.histogram(returns, grayscale=grayscale,
-                     figsize=(figsize[0], figsize[0]*.5),
+                     figsize=(figsize[0], figsize[0] * .5),
                      show=True, ylabel=False)
 
     _plots.daily_returns(returns, grayscale=grayscale,
-                         figsize=(figsize[0], figsize[0]*.3),
+                         figsize=(figsize[0], figsize[0] * .3),
                          show=True, ylabel=False)
 
     if benchmark is not None:
         _plots.rolling_beta(returns, benchmark, grayscale=grayscale,
-                            figsize=(figsize[0], figsize[0]*.3),
+                            figsize=(figsize[0], figsize[0] * .3),
                             show=True, ylabel=False)
 
     _plots.rolling_volatility(
         returns, benchmark, grayscale=grayscale,
-        figsize=(figsize[0], figsize[0]*.3), show=True, ylabel=False)
+        figsize=(figsize[0], figsize[0] * .3), show=True, ylabel=False)
 
     _plots.rolling_sharpe(returns, grayscale=grayscale,
-                          figsize=(figsize[0], figsize[0]*.3),
+                          figsize=(figsize[0], figsize[0] * .3),
                           show=True, ylabel=False)
 
     _plots.rolling_sortino(returns, grayscale=grayscale,
-                           figsize=(figsize[0], figsize[0]*.3),
+                           figsize=(figsize[0], figsize[0] * .3),
                            show=True, ylabel=False)
 
     _plots.drawdowns_periods(returns, grayscale=grayscale,
-                             figsize=(figsize[0], figsize[0]*.5),
+                             figsize=(figsize[0], figsize[0] * .5),
                              show=True, ylabel=False)
 
     _plots.drawdown(returns, grayscale=grayscale,
-                    figsize=(figsize[0], figsize[0]*.4),
+                    figsize=(figsize[0], figsize[0] * .4),
                     show=True, ylabel=False)
 
     _plots.monthly_heatmap(returns, grayscale=grayscale,
-                           figsize=(figsize[0], figsize[0]*.5),
+                           figsize=(figsize[0], figsize[0] * .5),
                            show=True, ylabel=False)
 
     _plots.distribution(returns, grayscale=grayscale,
-                        figsize=(figsize[0], figsize[0]*.5),
+                        figsize=(figsize[0], figsize[0] * .5),
                         show=True, ylabel=False)
 
 

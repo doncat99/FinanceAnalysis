@@ -5,8 +5,8 @@ from typing import List, Union
 
 import pandas as pd
 
+from zvt.api.data_type import Region, Provider
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
-from zvt.contract.common import Region, Provider
 from zvt.domain import FinanceFactor, BalanceSheet, Stock
 from zvt.factors import Transformer, Accumulator, FilterFactor
 from zvt.factors.factor import Factor
@@ -14,20 +14,20 @@ from zvt.factors.factor import Factor
 
 class FinanceBaseFactor(Factor):
 
-    def __init__(self, region: Region, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, 
-                 provider: Provider = Provider.Default, entity_provider: Provider = Provider.Default, 
-                 entity_ids: List[str] = None, exchanges: List[str] = None,
-                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False) -> None:
+    def __init__(self, region: Region, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock,
+                 provider: Provider = Provider.Default, entity_ids: List[str] = None, exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
+                 order: object = None, limit: int = None, level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
+                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
+                 transformer: Transformer = None, accumulator: Accumulator = None, need_persist: bool = False,
+                 dry_run: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
-        super().__init__(data_schema, region, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+        super().__init__(data_schema, region, entity_schema, provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
                          effective_number, transformer, accumulator, need_persist, dry_run)
@@ -35,11 +35,11 @@ class FinanceBaseFactor(Factor):
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
 
-    def __init__(self, region: Region, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, 
-                 provider: Provider = Provider.Default, entity_provider: Provider = Provider.Default, 
-                 entity_ids: List[str] = None, exchanges: List[str] = None,
-                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+    def __init__(self, region: Region, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock,
+                 provider: Provider = Provider.Default,
+                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
                  # 高roe,高现金流,低财务杠杆，有增长
                  columns: List = (FinanceFactor.roe,
                                   FinanceFactor.op_income_growth_yoy,
@@ -76,7 +76,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
 
         self.logger.info(f'using data_schema:{data_schema.__name__}')
 
-        super().__init__(region, data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+        super().__init__(region, data_schema, entity_schema, provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
                          effective_number, transformer, accumulator, need_persist, dry_run)

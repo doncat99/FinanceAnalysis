@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.contract.common import Region
+from zvt.api.data_type import Region
 from zvt.domain import ManagerTrading
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
@@ -26,5 +26,5 @@ class MySoloTrader(StockTrader):
 
 
 if __name__ == '__main__':
-    trader = MySoloTrader(Region.CHN, start_timestamp='2015-01-01', end_timestamp='2016-01-01')
+    trader = MySoloTrader(region=Region.CHN, start_timestamp='2015-01-01', end_timestamp='2016-01-01')
     trader.run()

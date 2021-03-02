@@ -3,18 +3,17 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.contract import IntervalLevel, EntityMixin
-from zvt.contract.common import Region, Provider
+from zvt.api.data_type import Region, Provider
 from zvt.domain import Stock
-from zvt.factors import Accumulator
+from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract.factor import Accumulator, Transformer
 from zvt.factors.algorithm import IntersectTransformer
-from zvt.factors.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 
 
 class SqueezeFactor(TechnicalFactor):
-    def __init__(self, region: Region, entity_schema: EntityMixin = Stock, 
-                 provider: Provider = Provider.Default, entity_provider: Provider = Provider.Default,
+    def __init__(self, region: Region, entity_schema: EntityMixin = Stock,
+                 provider: Provider = Provider.Default,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
@@ -28,7 +27,7 @@ class SqueezeFactor(TechnicalFactor):
         self.kdata_overlap = kdata_overlap
         transformer: Transformer = IntersectTransformer(kdata_overlap=self.kdata_overlap)
 
-        super().__init__(region, entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
+        super().__init__(region, entity_schema, provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
                          accumulator, need_persist, dry_run)
@@ -62,9 +61,9 @@ class SqueezeFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    factor = SqueezeFactor(region=Region.US, entity_ids=['stock_NASDAQ_FB'], 
+    factor = SqueezeFactor(region=Region.US, entity_ids=['stock_NASDAQ_FB'],
                            start_timestamp='2015-01-01', end_timestamp='2020-07-01',
                            kdata_overlap=4)
 
     gb = factor.result_df.groupby('entity_id')
-    dfs = {x : gb.get_group(x) for x in gb.groups}
+    dfs = {x: gb.get_group(x) for x in gb.groups}
