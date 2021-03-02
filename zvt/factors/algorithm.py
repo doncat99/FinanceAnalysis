@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import pandas as pd
 
 from zvt.contract.factor import Scorer, Transformer
@@ -8,7 +7,6 @@ from zvt.utils.pd_utils import normal_index_df
 
 def ma(s: pd.Series, window: int = 5):
     """
-
     :param s:
     :param window:
     :return:

@@ -129,15 +129,15 @@ class DataReader(Drawable):
         self.columns = columns
 
         # we store the data in a multiple index(category_column,timestamp) Dataframe
-        # if self.columns:
-        #     # support str
-        #     if type(columns[0]) == str:
-        #         self.columns = []
-        #         for col in columns:
-        #             self.columns.append(eval('data_schema.{}'.format(col)))
+        if self.columns:
+            # support str
+            if type(columns[0]) == str:
+                self.columns = []
+                for col in columns:
+                    self.columns.append(eval('data_schema.{}'.format(col)))
 
-        #     # always add category_column and time_field for normalizing
-        #     self.columns = list(set(self.columns) | {self.category_col, self.time_col})
+            # always add category_column and time_field for normalizing
+            self.columns = list(set(self.columns) | {self.category_col, self.time_col})
 
         self.data_listeners: List[DataListener] = []
 

@@ -17,7 +17,7 @@ import pandas as pd
 import pkg_resources
 # from pkg_resources import get_distribution, DistributionNotFound
 
-from zvt.consts import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
+from zvt.consts import ZVT_HOME
 
 # try:
 #     dist_name = __name__
@@ -30,7 +30,7 @@ from zvt.consts import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_D
 logger = logging.getLogger(__name__)
 
 
-def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
+def init_log(file_name='analysis.log', log_dir=None, simple_formatter=True):
     if not log_dir:
         log_dir = zvt_env['log_path']
 
